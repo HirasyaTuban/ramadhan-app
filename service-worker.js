@@ -1,4 +1,4 @@
-const CACHE_NAME = "ramadhan-app-v4";// ganti versi supaya refresh cache
+const CACHE_NAME = "ramadhan-app-v5";// ganti versi supaya refresh cache
 
 const urlsToCache = [
   "./",
@@ -7,6 +7,7 @@ const urlsToCache = [
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png"
+  "./offline.html",
 ];
 
 // Install
@@ -37,9 +38,12 @@ self.addEventListener("activate", event => {
 // Fetch
 self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        return response || fetch(event.request);
+    fetch(event.request)
+      .catch(() => {
+        return caches.match(event.request)
+          .then(response => {
+            return response || caches.match("./offline.html");
+          });
       })
   );
 });
