@@ -564,6 +564,8 @@ function exportPDF(){
       <p style="margin-top:40px;">
         Semoga menjadi amal jariyah 🤲
       </p>
+	  
+	  
     </body>
     </html>
   `;
@@ -1254,6 +1256,35 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
 </script>
+
+<script>
+let newWorker;
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./service-worker.js").then(reg => {
+
+    reg.addEventListener("updatefound", () => {
+      newWorker = reg.installing;
+
+      newWorker.addEventListener("statechange", () => {
+        if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+          
+          if (confirm("Versi baru tersedia. Update sekarang?")) {
+            newWorker.postMessage("SKIP_WAITING");
+          }
+
+        }
+      });
+    });
+
+  });
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    window.location.reload();
+  });
+}
+</script>
+
 
 </body>
 </html>

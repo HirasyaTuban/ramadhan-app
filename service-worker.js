@@ -1,4 +1,4 @@
-const CACHE_NAME = "ramadhan-app-v3"; // ganti versi supaya refresh cache
+const CACHE_NAME = "ramadhan-app-v4";// ganti versi supaya refresh cache
 
 const urlsToCache = [
   "./",
@@ -42,4 +42,10 @@ self.addEventListener("fetch", event => {
         return response || fetch(event.request);
       })
   );
+});
+
+self.addEventListener("message", event => {
+  if (event.data === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
