@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ramadhan Premium – Amal Jariyah</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0e0e0e">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+.footer small{
+  opacity:0.6;
+  font-size:11px;
+}
+
+body{
+margin:0;
+font-family:Arial;
+background:#0e0e0e;
+color:#fff;
+}
+
+.mode-btn{
+  width:100%;
+  padding:14px;
+  border-radius:14px;
+  border:2px solid #ffb300;
+  background:#1b1b1b;
+  color:#ffb300;
+  font-weight:bold;
+  margin-bottom:12px;
+  transition:0.2s;
+}
+
+.mode-btn.active{
+  background:#ffb300;
+  color:#000;
+  box-shadow:0 4px 12px rgba(255,179,0,0.4);
+}
+
+.mode-btn:hover{
+  transform:translateY(-2px);
+}
+
+canvas{
+  max-height:75px;
+}
+
+.app{
+min-height:100vh;
+padding-bottom:80px;
+}
+
+.chart-wrapper{
+  position:relative;
+  height:120px;
+  width:100%;
+}
+
+.chart-wrapper canvas{
+  width:100% !important;
+  height:100% !important;
+}
+
+.tab{
+display:none;
+padding:18px 16px;
+max-width:500px;
+margin:auto;
+}
+
+.tab.active{display:block;}
+
+.card{
+background:#1b1b1b;
+border-radius:16px;
+padding:18px;
+margin-bottom:16px;
+box-shadow:0 4px 12px rgba(0,0,0,0.4);
+}
+
+h3{margin:0 0 10px;}
+small{color:#aaa;}
+
+button{
+width:100%;
+padding:12px;
+border:none;
+border-radius:12px;
+background:#ffb300;
+font-weight:bold;
+}
+
+button:disabled{
+background:#333;
+color:#777;
+}
+
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  left:50%;
+  transform:translateX(-50%);
+  width:100%;
+  max-width:500px;
+  height:60px;
+  background:#111;
+  display:flex;
+  border-top:1px solid #222;
+}
+
+.bottom-nav button{
+flex:1;
+background:none;
+border:none;
+color:#aaa;
+}
+
+.bottom-nav button.active{color:#ffb300;}
+
+.circle{
+width:120px;
+height:120px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+margin:10px auto;
+font-size:22px;
+font-weight:bold;
+}
+
+textarea,input{
+width:100%;
+border-radius:10px;
+border:none;
+padding:10px;
+background:#111;
+color:#fff;
+}
+
+.checklist-title{
+color:#ffb300;
+font-weight:bold;
+margin-top:10px;
+}
+
+.checklist-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 0;
+}
+
+.check-text{
+  display:flex;
+  flex-direction:column;
+}
+
+.checklist-row input{
+  width:18px;
+  height:18px;
+}
+
+.check-left span{
+flex:1;
+}
+
+.check-left{
+display:flex;
+align-items:center;
+gap:12px;
+flex:1;
+}
+
+.checklist-row small{
+text-align:right;
+min-width:130px;
+font-size:12px;
+color:#aaa;
+}
+
+.checklist-row{
+  min-height:48px;
+}
+
+.progress-container{
+width:100%;
+height:16px;
+background:#333;
+border-radius:10px;
+overflow:hidden;
+}
+
+.progress-bar{
+height:100%;
+background:#ffb300;
+width:0%;
+}
+
+.motivasi-sholat{
+  position: relative;
+  overflow: hidden;
+
+  font-size:13px;
+  line-height:1.6;
+  padding:16px;
+  border-radius:16px;
+  margin-bottom:16px;
+
+  background: linear-gradient(145deg, rgba(255,179,0,0.08), rgba(255,140,0,0.05));
+  border: 1px solid rgba(255,179,0,0.25);
+
+  color: #ffcc66;
+
+  box-shadow: 
+    0 4px 15px rgba(255,179,0,0.15),
+    inset 0 0 8px rgba(255,179,0,0.08);
+
+  backdrop-filter: blur(6px);
+
+  animation: fadeInGlow 0.8s ease;
+}
+
+/* Icon sparkle depan */
+.motivasi-sholat::before{
+  content: "✨ ";
+}
+
+/* Icon masjid tipis pojok */
+.motivasi-sholat::after{
+  content: "🕌";
+  position: absolute;
+  top: 8px;
+  right: 14px;
+  font-size: 22px;
+  opacity: 0.08;
+}
+
+/* Glow lebih kuat saat Ramadhan mode */
+body.ramadhan-mode .motivasi-sholat{
+  box-shadow: 
+    0 0 25px rgba(255,179,0,0.45),
+    inset 0 0 12px rgba(255,179,0,0.25);
+  border: 1px solid rgba(255,179,0,0.5);
+}
+
+/* Animasi muncul halus */
+@keyframes fadeInGlow{
+  from{
+    opacity:0;
+    transform: translateY(8px);
+  }
+  to{
+    opacity:1;
+    transform: translateY(0);
+  }
+}
+
+.footer{
+text-align:center;
+font-size:13px;
+color:#aaa;
+}
+
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<!-- TAB 1 -->
+<div id="tab1" class="tab active">
+
+<div class="card">
+  <h3>Mode Program</h3>
+<button id="btnRamadhan" class="mode-btn" onclick="setMode('ramadhan')">
+  🌙 Ramadhan 30 Hari
+</button>
+
+
+<button id="btnTadabbur" class="mode-btn" onclick="setMode('tadabbur')">
+  📖 Tadabbur 365 Hari
+</button>
+  <small id="modeInfo"></small>
+</div>
+
+<div class="card">
+  <button onclick="resetProgram()" style="background:#aa2e2e;color:#fff">
+    🔄 Reset Program Aktif
+  </button>
+</div>
+
+<div class="card">
+<small id="challengeDay"></small>
+<h3 id="challengeTitle"></h3>
+<small id="challengeFocus"></small>
+<p><b>Musuh Hari Ini:</b> <span id="challengeEnemy"></span></p>
+<p id="challengeDalil"></p>
+<p id="challengeMission"></p>
+</div>
+
+<div class="card">
+<button id="challengeBtn" onclick="completeChallenge()">✔ Selesaikan Hari Ini</button>
+<p id="streakText" style="margin-top:8px;font-weight:bold"></p>
+<small id="challengeStatus"></small>
+</div>
+
+<div class="card">
+<h3>Progress Challenge</h3>
+<div class="progress-container">
+<div id="challengeProgress" class="progress-bar"></div>
+</div>
+<small id="challengeProgressText"></small>
+</div>
+
+</div>
+
+<!-- TAB 2 -->
+<div id="tab2" class="tab">
+
+<div class="card">
+<h3>Ibadah Hari Ini</h3>
+<div id="ibadahCircle" class="circle">0%</div>
+<small id="ibadahDate"></small>
+</div>
+
+<div class="card">
+
+<p class="motivasi-sholat">
+Shaf pertama bukan hanya barisan, tapi kehormatan. 
+Bersegera ke masjid adalah tanda rindu pada petunjuk; 
+menunda-nunda bisa jadi tanda hati yang mulai lalai.
+</p>
+<div id="sholatList"></div>
+</div>
+
+<div class="card">
+<h3>Grafik Ibadah 30 Hari</h3>
+<canvas id="ibadahChart" height="140"></canvas>
+</div>
+
+<div class="card">
+<h3>Jurnal Syukur</h3>
+<textarea id="syukurText" rows="3" placeholder="Tulis 3 hal yang disyukuri hari ini..."></textarea>
+<button onclick="saveSyukur()">Simpan</button>
+</div>
+
+</div>
+
+<!-- TAB 3: QURAN -->
+<div id="tab3" class="tab">
+  <div class="card">
+    <h3>📖 Jurnal Qur’an</h3>
+    <small id="quranDate"></small>
+  </div>
+
+  <div class="card">
+    <h3>Target Harian (Halaman)</h3>
+    <input id="qTarget" type="number" placeholder="misal 20">
+    <small>Target boleh diubah kapan saja</small>
+  </div>
+
+  <div class="card">
+    <h3>Bacaan Hari Ini (Halaman)</h3>
+    <input id="qRead" type="number" placeholder="jumlah halaman">
+    <button onclick="saveRead()">Simpan Bacaan</button>
+  </div>
+
+  <div class="card" style="text-align:center">
+    <div id="qCircle" class="circle">0%</div>
+    <small id="qStatus"></small>
+  </div>
+
+  <div class="card">
+    <h3>Target Khatam Qur’an</h3>
+    <div class="progress-container">
+      <div id="khatamBar" class="progress-bar"></div>
+    </div>
+    <small id="khatamText"></small>
+  </div>
+</div>
+
+<div class="card">
+  <h3>Grafik Bacaan 30 Hari</h3>
+  <div class="chart-wrapper">
+    <canvas id="quranChart"></canvas>
+  </div>
+</div>
+
+<!-- TAB 4 -->
+<div id="tab4" class="tab">
+<div class="card">
+<h3>Rekap Ramadhan</h3>
+<p id="rekapChallenge"></p>
+<p id="rekapIbadah"></p>
+<p id="rekapQuran"></p>
+<p id="rekapSyukur"></p>
+</div>
+
+<div class="card">
+  <button onclick="exportPDF()">
+    📄 Export Rekap PDF
+  </button>
+</div>
+
+<div class="card">
+  <h3>Profil</h3>
+  <input id="userName" placeholder="Masukkan Nama Anda">
+  <button onclick="saveUserName()">Simpan Nama</button>
+</div>
+
+<div class="card footer">
+© 2026 <b>Sugiharto</b><br>
+Dibangun bersama AI untuk Amal Jariyah<br>
+Ramadhan Mubarak 🌙
+</div>
+</div>
+
+</div>
+
+<div class="bottom-nav">
+<button class="active" onclick="openTab(1)">Tantangan</button>
+<button onclick="openTab(2)">Ibadah</button>
+<button onclick="openTab(3)">Al Qur’an</button>
+<button onclick="openTab(4)">Rekap</button>
+</div>
+
+<div class="footer" id="appFooter">
+  Ramadhan & Tadabbur App
+</div>
+
+
+<script>
+
+const RAMADHAN_DURATION = 30;
+const TADABBUR_DURATION = 365;
+const APP_VERSION = "1.0.0 - Ramadhan Release";
+
+if(!localStorage.programMode){
+  localStorage.programMode = "ramadhan";
+}
+
+let programMode = localStorage.programMode;
+
+// ===== AMBIL SEMUA ELEMENT DOM =====
+
+const challengeDay = document.getElementById("challengeDay");
+const challengeTitle = document.getElementById("challengeTitle");
+const challengeFocus = document.getElementById("challengeFocus");
+const challengeEnemy = document.getElementById("challengeEnemy");
+const challengeDalil = document.getElementById("challengeDalil");
+const challengeMission = document.getElementById("challengeMission");
+const challengeBtn = document.getElementById("challengeBtn");
+const challengeStatus = document.getElementById("challengeStatus");
+const challengeProgress = document.getElementById("challengeProgress");
+const challengeProgressText = document.getElementById("challengeProgressText");
+
+const ibadahCircle = document.getElementById("ibadahCircle");
+const ibadahDate = document.getElementById("ibadahDate");
+const sholatList = document.getElementById("sholatList");
+
+const quranDate = document.getElementById("quranDate");
+const qCircle = document.getElementById("qCircle");
+const qStatus = document.getElementById("qStatus");
+const khatamBar = document.getElementById("khatamBar");
+const khatamText = document.getElementById("khatamText");
+
+const rekapChallenge = document.getElementById("rekapChallenge");
+const rekapIbadah = document.getElementById("rekapIbadah");
+const rekapQuran = document.getElementById("rekapQuran");
+
+/* =========================
+   SYSTEM DATE & RAMADHAN
+========================= */
+
+const today = new Date();
+const todayKey = today.toISOString().split("T")[0];
+
+const formattedDate = today.toLocaleDateString("id-ID",{
+  weekday:"long",
+  day:"numeric",
+  month:"long",
+  year:"numeric"
+});
+
+/* =========================
+   CHALLENGE SYSTEM
+========================= */
+
+const challengeThemes = [
+"Niat & Ikhlas","Shalat Tepat Waktu","Tilawah",
+"Sedekah","Menjaga Lisan","Sabar",
+"Menahan Amarah","Dzikir","Doa",
+"Birrul Walidain","Silaturahmi","Istighfar",
+"Qiyamul Lail","Syukur","Tawakal",
+"Tafakur","Menuntut Ilmu","Menolong",
+"Tersenyum","Menjaga Pandangan",
+"Puasa Berkualitas","Menepati Janji",
+"Menghindari Ghibah","Berprasangka Baik",
+"Menjaga Amanah","Memaafkan",
+"Qanaah","Tadabbur Qur'an",
+"Muhasabah","Taqwa"
+];
+
+function saveUserName(){
+  const name =
+    document.getElementById("userName").value;
+
+  localStorage["user_name"] = name;
+  alert("Nama disimpan");
+}
+
+function exportPDF(){
+
+  const name =
+    localStorage["user_name"] || "-";
+
+  const challenge =
+    rekapChallenge.textContent;
+
+  const ibadah =
+    rekapIbadah.textContent;
+
+  const quran =
+    rekapQuran.textContent;
+
+  const today =
+    new Date().toLocaleDateString("id-ID");
+
+  const content = `
+    <html>
+    <head>
+      <title>Rekap Ramadhan</title>
+      <style>
+        body{
+          font-family:Arial;
+          padding:40px;
+        }
+        h1{
+          text-align:center;
+        }
+        .box{
+          margin-top:20px;
+          padding:15px;
+          border:1px solid #ccc;
+          border-radius:8px;
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Rekap Ramadhan</h1>
+      <p><b>Nama:</b> ${name}</p>
+      <p><b>Tanggal Cetak:</b> ${today}</p>
+
+      <div class="box">
+        <p>${challenge}</p>
+        <p>${ibadah}</p>
+        <p>${quran}</p>
+      </div>
+
+      <p style="margin-top:40px;">
+        Semoga menjadi amal jariyah 🤲
+      </p>
+    </body>
+    </html>
+  `;
+
+  const win = window.open("", "", "width=800,height=600");
+  win.document.write(content);
+  win.document.close();
+  win.print();
+}
+
+function getRamadhanDay(){
+
+  const currentYear = new Date().getFullYear();
+
+  // Perkiraan awal Ramadhan (bisa disesuaikan tiap tahun)
+  const ramadhanStartDates = {
+    2025: "2025-03-01",
+    2026: "2026-02-18",
+    2027: "2027-02-08"
+  };
+
+  const startString = ramadhanStartDates[currentYear];
+
+  if(!startString){
+    return 1; // fallback kalau tahun belum ada
+  }
+
+  const ramadhanStart = new Date(startString);
+  const today = new Date();
+
+  const diffTime = today - ramadhanStart;
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if(diffDays < 0) return 1;
+  if(diffDays > 29) return 30;
+
+  return diffDays + 1;
+}
+
+function loadChallenge(){
+
+  const duration =
+    programMode === "ramadhan"
+    ? RAMADHAN_DURATION
+    : TADABBUR_DURATION;
+
+let index;
+
+if(programMode === "ramadhan"){
+  index = Math.min(getRamadhanDay() - 1, duration-1);
+}else{
+  index = Math.min(
+    Math.floor((today - new Date(today.getFullYear(),0,1)) / (1000*60*60*24)),
+    duration-1
+  );
+}
+
+  challengeDay.textContent =
+    "Hari ke-" + (index+1) +
+    " • " + formattedDate;
+
+  if(programMode === "ramadhan"){
+
+    const theme =
+      challengeThemes[index % 30];
+
+    challengeTitle.textContent = theme;
+    challengeFocus.textContent =
+      "Program Ramadhan";
+
+    challengeDalil.textContent =
+      "Amal terbaik hari ini.";
+
+    challengeMission.textContent =
+      "Maksimalkan ibadah harian.";
+
+  } else {
+
+    challengeTitle.textContent =
+      "Tadabbur Hari Ini";
+
+    challengeFocus.textContent =
+      "Program 1 Tahun";
+
+    challengeDalil.textContent =
+      "Renungkan 1 ayat atau 1 hadist hari ini.";
+
+    challengeMission.textContent =
+      "Tulis refleksi pribadi Anda.";
+
+  }
+
+  document.getElementById("modeInfo").textContent =
+    "Mode aktif: " +
+    (programMode === "ramadhan"
+      ? "Ramadhan 30 Hari"
+      : "Tadabbur 365 Hari");
+
+  updateChallengeProgress();
+}
+
+function completeChallenge(){
+
+  const key =
+    programMode + "_challenge_" +
+    todayKey;
+
+  localStorage[key] = "1";
+
+  challengeBtn.disabled = true;
+  challengeStatus.textContent = "✔ Selesai";
+
+  updateChallengeProgress();
+  updateStreak();
+}
+
+function updateStreak(){
+
+  let streak = 0;
+
+  for(let i=0;i<365;i++){
+
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+
+    const key =
+      programMode +
+      "_challenge_" +
+      d.toISOString().split("T")[0];
+
+    if(localStorage[key]){
+      streak++;
+    } else {
+      break;
+    }
+  }
+
+  document.getElementById("streakText")
+    .textContent =
+    "🔥 Streak: " + streak + " hari";
+}
+
+function updateChallengeProgress(){
+
+  let done = 0;
+
+  const duration =
+    programMode === "ramadhan"
+      ? RAMADHAN_DURATION
+      : TADABBUR_DURATION;
+
+  for(let i=0;i<duration;i++){
+
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+
+    const key =
+      programMode +
+      "_challenge_" +
+      d.toISOString().split("T")[0];
+
+    if(localStorage[key]) done++;
+  }
+
+  challengeProgress.style.width =
+    (done/duration*100)+"%";
+
+  challengeProgressText.textContent =
+    done+" / " + duration + " hari";
+}
+/* =========================
+   IBADAH SYSTEM
+========================= */
+
+const sholatData=[
+{
+ title:"Checklist Sholat",
+ items:[
+  ["Qobliyah Subuh","2 rakaat"],
+  ["Subuh","2 rakaat"],
+  ["Qobliyah Zuhur","4 rakaat"],
+  ["Zuhur","4 rakaat"],
+  ["Ba'diyah Zuhur","2 rakaat"],
+  ["Ashar","4 rakaat"],
+  ["Maghrib","3 rakaat"],
+  ["Ba'diyah Maghrib","2 rakaat"],
+  ["Isya","4 rakaat"],
+  ["Ba'diyah Isya","2 rakaat"]
+ ]
+},
+{
+ title:"Sunnah Lainnya",
+ items:[
+  ["Tarawih","8–20 rakaat"],
+  ["Witir","1–11 rakaat"],
+  ["Dhuha","2–12 rakaat"],
+  ["Tahajud","2–12 rakaat"],
+  ["Al Ma’surat Pagi","Dzikir"],
+  ["Al Ma’surat Petang","Dzikir"]
+ ]
+}
+];
+
+function renderSholat(){
+
+  sholatList.innerHTML="";
+
+  sholatData.forEach(group=>{
+
+    sholatList.innerHTML+=
+    `<div class="checklist-title">${group.title}</div>`;
+
+    group.items.forEach(item=>{
+
+      const key="ibadah_"+todayKey+"_"+item[0];
+      const checked=localStorage[key]=="1";
+
+      sholatList.innerHTML+=`
+      <div class="checklist-row">
+        <div class="check-text">
+          <div>${item[0]}</div>
+          <div class="rakaat">${item[1]}</div>
+        </div>
+        <input type="checkbox"
+          ${checked?"checked":""}
+          onchange="localStorage['${key}']=this.checked?'1':'0';updateIbadah()">
+      </div>`;
+    });
+  });
+
+  updateIbadah();
+}
+
+function updateIbadah(){
+
+  const all =
+  document.querySelectorAll("#sholatList input");
+
+  const checked =
+  [...all].filter(x=>x.checked).length;
+
+  const percent =
+  Math.round(checked/all.length*100 || 0);
+
+  ibadahCircle.textContent = percent+"%";
+  ibadahCircle.style.background =
+  `conic-gradient(#ffb300 ${percent}%,#333 0)`;
+
+  localStorage["ibadah_percent_"+todayKey] =
+  percent;
+
+  updateChart();
+}
+
+function saveSyukur(){
+  localStorage["syukur_"+todayKey] =
+    document.getElementById("syukurText").value;
+  alert("Disimpan");
+}
+
+function loadSyukur(){
+  const data =
+    localStorage["syukur_"+todayKey] || "";
+  document.getElementById("syukurText").value = data;
+}
+
+function setMode(mode){
+
+  localStorage.programMode = mode;
+  programMode = mode;
+
+  document.getElementById("btnRamadhan")
+    .classList.remove("active");
+
+  document.getElementById("btnTadabbur")
+    .classList.remove("active");
+
+  if(mode === "ramadhan"){
+    document.getElementById("btnRamadhan")
+      .classList.add("active");
+  } else {
+    document.getElementById("btnTadabbur")
+      .classList.add("active");
+  }
+
+  console.log("Mode:", mode);
+
+  /* TAMBAHKAN DI SINI */
+  if(mode === "ramadhan"){
+    document.body.classList.add("ramadhan-mode");
+  }else{
+    document.body.classList.remove("ramadhan-mode");
+  }
+
+  loadChallenge();
+}
+
+function resetProgram(){
+
+  const confirmReset =
+    confirm("Yakin ingin mereset program ini? Data akan dihapus.");
+
+  if(!confirmReset) return;
+
+  const prefix =
+    programMode + "_challenge_";
+
+  const duration =
+    programMode === "ramadhan"
+      ? RAMADHAN_DURATION
+      : TADABBUR_DURATION;
+
+  for(let i=0;i<duration;i++){
+
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+
+    const key =
+      prefix +
+      d.toISOString().split("T")[0];
+
+    localStorage.removeItem(key);
+  }
+
+  alert("Program berhasil direset.");
+
+  updateChallengeProgress();
+  updateStreak();
+}
+
+/* =========================
+   IBADAH CHART
+========================= */
+
+let chart=null;
+
+function updateChart(){
+
+  const labels=[],data=[];
+
+  for(let i=29;i>=0;i--){
+    const d=new Date();
+    d.setDate(d.getDate()-i);
+    const k=d.toISOString().split("T")[0];
+    labels.push(d.getDate());
+    data.push(
+      +localStorage["ibadah_percent_"+k]||0
+    );
+  }
+
+  if(chart) chart.destroy();
+
+  chart=new Chart(ibadahChart,{
+    type:"line",
+    data:{
+      labels,
+      datasets:[{
+        data,
+        borderColor:"#ffb300",
+        fill:true
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}},
+      scales:{y:{min:0,max:100}}
+    }
+  });
+}
+
+/* =========================
+   QURAN SYSTEM
+========================= */
+
+/* =========================
+   QURAN SYSTEM (SAFE VERSION)
+========================= */
+
+function saveRead(){
+
+  const read =
+    +document.getElementById("qRead").value || 0;
+
+  const target =
+    +document.getElementById("qTarget").value || 0;
+
+  const previous =
+    +localStorage["quran_read_"+todayKey] || 0;
+
+  // ambil total lama
+  let total =
+    +localStorage["quran_total"] || 0;
+
+  // update total tanpa dobel hitung
+  total = total - previous + read;
+
+  localStorage["quran_total"] = total;
+
+  // simpan harian
+  localStorage["quran_read_"+todayKey] = read;
+  localStorage["quran_target"] = target;
+
+  updateQuran();
+  updateQuranChart();
+}
+
+function updateQuran(){
+
+  const read =
+    +localStorage["quran_read_"+todayKey] || 0;
+
+  const target =
+    +localStorage["quran_target"] || 0;
+
+  document.getElementById("qTarget").value = target;
+
+  const percent =
+    target
+      ? Math.min(100, Math.round(read/target*100))
+      : 0;
+
+  qCircle.textContent = percent+"%";
+  qCircle.style.background =
+    `conic-gradient(#ffb300 ${percent}%,#333 0)`;
+
+  qStatus.textContent =
+    "Baca "+read+" dari "+target+" halaman";
+
+  updateKhatam();
+}
+
+let qChart = null;
+
+function updateQuranChart(){
+
+  const labels = [];
+  const data = [];
+
+  const duration =
+    programMode === "ramadhan"
+      ? 30
+      : 365;
+
+  for(let i=duration-1;i>=0;i--){
+
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    const key = d.toISOString().split("T")[0];
+
+    if(programMode === "ramadhan"){
+      labels.push(d.getDate());
+    } else {
+      labels.push(i % 30 === 0 ? "•" : "");
+    }
+
+    data.push(
+      +localStorage["quran_read_"+key] || 0
+    );
+  }
+
+  if(qChart) qChart.destroy();
+
+  qChart = new Chart(quranChart,{
+    type:"line",
+    data:{
+      labels,
+      datasets:[{
+        data,
+        borderColor:"#ffb300",
+        backgroundColor:"rgba(255,179,0,0.15)",
+        tension:0.4,
+        borderWidth:2,
+        fill:true,
+        pointRadius:1
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{grid:{display:false}},
+        y:{
+          beginAtZero:true,
+          grid:{color:"#222"}
+        }
+      }
+    }
+  });
+}
+
+function updateKhatam(){
+
+  const total =
+    +localStorage["quran_total"] || 0;
+
+  const khatamCount =
+    Math.floor(total / 600);
+
+  const sisa =
+    total % 600;
+
+  const percent =
+    Math.round((sisa / 600) * 100);
+
+  khatamBar.style.width =
+    percent + "%";
+
+  khatamText.textContent =
+    sisa + " halaman • " +
+    khatamCount + "x Khatam";
+}
+
+/* =========================
+   REKAP SYSTEM
+========================= */
+
+function updateRekap(){
+
+  let challengeDone = 0;
+  let ibadahTotal = 0;
+  let ibadahCount = 0;
+  let qTotal = 0;
+
+  const duration =
+    programMode === "ramadhan" ? 30 : 365;
+
+  /* =========================
+     HITUNG CHALLENGE
+  ========================= */
+
+  for(let i=0;i<duration;i++){
+
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+
+    const k =
+      programMode +
+      "_challenge_" +
+      d.toISOString().split("T")[0];
+
+    if(localStorage[k]) challengeDone++;
+  }
+
+  /* =========================
+     HITUNG IBADAH 30 HARI
+  ========================= */
+
+  for(let i=0;i<30;i++){
+
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+
+    const k = d.toISOString().split("T")[0];
+
+    if(localStorage["ibadah_percent_"+k]){
+      ibadahTotal +=
+        +localStorage["ibadah_percent_"+k];
+      ibadahCount++;
+    }
+
+    qTotal +=
+      +localStorage["quran_read_"+k] || 0;
+  }
+
+  const avgIbadah =
+    ibadahCount
+      ? Math.round(ibadahTotal / ibadahCount)
+      : 0;
+
+  const khatamCount =
+    Math.floor(qTotal / 600);
+
+  rekapChallenge.textContent =
+    "Challenge selesai: " +
+    challengeDone +
+    " / " +
+    duration +
+    " hari";
+
+  rekapIbadah.textContent =
+    "Rata-rata Ibadah: " +
+    avgIbadah +
+    "%";
+
+  rekapQuran.textContent =
+    "Total Qur'an: " +
+    qTotal +
+    " halaman (" +
+    khatamCount +
+    "x Khatam)";
+}
+
+/* =========================
+   NAVIGATION
+========================= */
+
+function openTab(n){
+  document.querySelectorAll(".tab")
+  .forEach(t=>t.classList.remove("active"));
+
+  document.querySelectorAll(".bottom-nav button")
+  .forEach(b=>b.classList.remove("active"));
+
+  document.getElementById("tab"+n)
+  .classList.add("active");
+
+  document.querySelectorAll(".bottom-nav button")[n-1]
+  .classList.add("active");
+
+  updateRekap();
+}
+
+/* =========================
+   INIT
+========================= */
+
+// Alarm jam 20:30
+setInterval(function(){
+
+  const now = new Date();
+  const jam = now.getHours();
+  const menit = now.getMinutes();
+
+  if(jam === 20 && menit === 30){
+    alert("Waktunya isi target & amalan harian 🌙");
+  }
+
+}, 60000);
+
+
+/* =========================
+   AUTO RELOAD JIKA TANGGAL BERUBAH
+========================= */
+
+
+let lastDate = todayKey;
+
+setInterval(function(){
+  const now = new Date();
+  const current = now.toISOString().split("T")[0];
+
+  if(current !== lastDate){
+    location.reload();
+  }
+}, 60000);
+
+// jalankan init
+loadSyukur();
+renderSholat();
+updateQuran();
+updateQuranChart();
+updateRekap();
+setMode(programMode);
+updateStreak();
+
+</script>
+
+
+<!-- SERVICE WORKER HARUS TERPISAH DAN PALING BAWAH -->
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js")
+    .then(reg => {
+
+      reg.onupdatefound = () => {
+        const newWorker = reg.installing;
+
+        if (!newWorker) return;
+
+        newWorker.onstatechange = () => {
+          if (
+            newWorker.state === "installed" &&
+            navigator.serviceWorker.controller
+          ) {
+            window.location.reload();
+          }
+        };
+      };
+
+    })
+    .catch(err => console.log("SW Error:", err));
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+  document.getElementById("appFooter").innerHTML +=
+    "<br><small>Versi " + APP_VERSION + "</small>";
+});
+
+
+</script>
+
+</body>
+</html>
