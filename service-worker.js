@@ -1,16 +1,17 @@
-const CACHE_NAME = "ramadhan-app-v2"; // ← ganti versi kalau update
+const CACHE_NAME = "ramadhan-app-v3"; // ganti versi supaya refresh cache
 
 const urlsToCache = [
-  "/",
-  "/app.html",
-  "/manifest.json",
-  "/icon-192.png",
-  "/icon-512.png"
+  "./",
+  "./index.html",
+  "./app.html",
+  "./manifest.json",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
 // Install
 self.addEventListener("install", event => {
-  self.skipWaiting(); // langsung aktif
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
@@ -24,26 +25,21 @@ self.addEventListener("activate", event => {
       return Promise.all(
         keys.map(key => {
           if (key !== CACHE_NAME) {
-            return caches.delete(key); // hapus cache lama
+            return caches.delete(key);
           }
         })
       );
     })
   );
-  self.clients.claim(); // langsung kontrol semua tab
+  self.clients.claim();
 });
 
 // Fetch
 self.addEventListener("fetch", event => {
   event.respondWith(
-    fetch(event.request)
+    caches.match(event.request)
       .then(response => {
-        return caches.open(CACHE_NAME)
-          .then(cache => {
-            cache.put(event.request, response.clone());
-            return response;
-          });
+        return response || fetch(event.request);
       })
-      .catch(() => caches.match(event.request))
   );
 });
