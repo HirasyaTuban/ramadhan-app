@@ -1,4 +1,4 @@
-const CACHE_NAME = "ramadhan-app-v8";// ganti versi supaya refresh cache
+const CACHE_NAME = "ramadhan-app-v9";// ganti versi supaya refresh cache
 
 const urlsToCache = [
   "./",
