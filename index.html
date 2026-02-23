@@ -279,6 +279,53 @@ color:#aaa;
 
 <div class="app">
 
+<button id="enableNotifBtn" class="notif-btn">
+  🔔 Aktifkan Pengingat Imsak
+</button>
+
+<style>
+.notif-btn {
+  width: 100%;
+  padding: 12px;
+  background: #1c1c1c;
+  color: white;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 12px;
+  font-size: 14px;
+  margin-top: 15px;
+  transition: 0.2s;
+}
+
+.notif-btn:hover {
+  background: #2a2a2a;
+}
+
+.notif-btn:active {
+  transform: scale(0.98);
+}
+</style>
+
+<div style="margin-top:15px;">
+  <label for="citySelect" style="font-size:13px;opacity:0.8;">
+    Pilih Kota:
+  </label>
+
+  <select id="citySelect" class="notif-btn">
+    <option value="Jakarta">Jakarta</option>
+    <option value="Surabaya">Surabaya</option>
+    <option value="Tuban">Tuban</option>
+    <option value="Bandung">Bandung</option>
+    <option value="Semarang">Semarang</option>
+    <option value="Medan">Medan</option>
+    <option value="Makassar">Makassar</option>
+    <option value="Yogyakarta">Yogyakarta</option>
+    <option value="Palembang">Palembang</option>
+    <option value="Balikpapan">Balikpapan</option>
+    <option value="Manado">Manado</option>
+  </select>
+</div>
+
+
 <style>
 #splash-screen {
   position: fixed;
@@ -1366,6 +1413,43 @@ function scheduleImsakNotification(hour, minute) {
 
 <script>
 scheduleImsakNotification(4, 15); // jam 04:15
+</script>
+
+<script>
+document.getElementById("enableNotifBtn").addEventListener("click", () => {
+
+  if (!("Notification" in window)) {
+    alert("Browser tidak mendukung notifikasi");
+    return;
+  }
+
+  Notification.requestPermission().then(permission => {
+
+    if (permission === "granted") {
+      alert("Notifikasi berhasil diaktifkan 🔥");
+      scheduleImsakNotification(4, 15); // waktu imsak
+    } else {
+      alert("Notifikasi ditolak");
+    }
+
+  });
+
+});
+</script>
+
+<script>
+const citySelect = document.getElementById("citySelect");
+
+// Load kota tersimpan
+if (localStorage.getItem("selectedCity")) {
+  citySelect.value = localStorage.getItem("selectedCity");
+}
+
+// Simpan saat berubah
+citySelect.addEventListener("change", () => {
+  localStorage.setItem("selectedCity", citySelect.value);
+  alert("Kota disimpan: " + citySelect.value);
+});
 </script>
 
 </body>
