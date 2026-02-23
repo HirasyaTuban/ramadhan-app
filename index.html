@@ -310,20 +310,161 @@ color:#aaa;
     Pilih Kota:
   </label>
 
-  <select id="citySelect" class="notif-btn">
+  <select id="citySelect2" class="notif-btn">
     <option value="Jakarta">Jakarta</option>
+    <option value="Bandung">Bandung</option>
     <option value="Surabaya">Surabaya</option>
     <option value="Tuban">Tuban</option>
-    <option value="Bandung">Bandung</option>
     <option value="Semarang">Semarang</option>
+    <option value="Yogyakarta">Yogyakarta</option>
     <option value="Medan">Medan</option>
     <option value="Makassar">Makassar</option>
-    <option value="Yogyakarta">Yogyakarta</option>
     <option value="Palembang">Palembang</option>
     <option value="Balikpapan">Balikpapan</option>
     <option value="Manado">Manado</option>
   </select>
 </div>
+
+<div id="jadwalContainer2" style="margin-top:15px; display:flex; flex-wrap:wrap; gap:10px;">
+  <!-- Kartu jadwal interaktif muncul di sini -->
+</div>
+
+<div id="countdown" style="margin-top:10px; font-size:14px; font-weight:bold;"></div>
+
+<style>
+.jadwal-card2 {
+  flex: 1 1 150px;
+  min-width: 150px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #f7f7f7;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  font-size: 14px;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+}
+.jadwal-card2:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+.jadwal-title2 {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+.imsak2 {
+  color: #e74c3c;
+}
+.sholat2 {
+  color: #2c3e50;
+}
+.active {
+  background: #ffeaa7 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+</style>
+
+<script>
+const citySelect2 = document.getElementById('citySelect2');
+const jadwalContainer2 = document.getElementById('jadwalContainer2');
+const countdownEl = document.getElementById('countdown');
+
+let jadwalArrayGlobal = [];
+
+// Fungsi ambil jadwal API
+async function fetchJadwal2(city) {
+  try {
+    jadwalContainer2.innerHTML = "Loading...";
+    const url = `https://api.aladhan.com/v1/timingsByCity?city=${city}&country=Indonesia&method=11`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.code === 200) {
+      const timings = data.data.timings;
+      jadwalArrayGlobal = [
+        { name: 'Imsak', time: timings.Imsak, class: 'imsak2' },
+        { name: 'Subuh', time: timings.Fajr, class: 'sholat2' },
+        { name: 'Terbit', time: timings.Sunrise, class: 'sholat2' },
+        { name: 'Dzuhur', time: timings.Dhuhr, class: 'sholat2' },
+        { name: 'Ashar', time: timings.Asr, class: 'sholat2' },
+        { name: 'Maghrib', time: timings.Maghrib, class: 'sholat2' },
+        { name: 'Isya', time: timings.Isha, class: 'sholat2' },
+      ];
+      renderJadwal2();
+      updateActiveTime2();
+      setInterval(updateActiveTime2, 1000); // update tiap detik
+    } else {
+      jadwalContainer2.innerHTML = "Gagal mengambil jadwal. Coba lagi.";
+    }
+  } catch (error) {
+    console.error(error);
+    jadwalContainer2.innerHTML = "Terjadi kesalahan saat memanggil API.";
+  }
+}
+
+// Render kartu
+function renderJadwal2() {
+  jadwalContainer2.innerHTML = jadwalArrayGlobal.map(j => `
+    <div class="jadwal-card2" data-time="${j.time}">
+      <div class="jadwal-title2 ${j.class}">${j.name}</div>
+      <div>${j.time}</div>
+    </div>
+  `).join('');
+}
+
+// Update highlight dan countdown
+function updateActiveTime2() {
+  const now = new Date();
+  const cards = document.querySelectorAll('.jadwal-card2');
+  let nextTime = null;
+
+  cards.forEach(card => {
+    const timeStr = card.dataset.time; // "05:00"
+    const [h,m] = timeStr.split(':');
+    const cardDate = new Date();
+    cardDate.setHours(parseInt(h));
+    cardDate.setMinutes(parseInt(m));
+    cardDate.setSeconds(0);
+
+    if (cardDate <= now) {
+      card.classList.remove('active');
+    } else if (!nextTime || cardDate < nextTime) {
+      nextTime = cardDate;
+    }
+  });
+
+  // Highlight waktu berikutnya
+  if(nextTime){
+    cards.forEach(card => {
+      const [h,m] = card.dataset.time.split(':');
+      const cardDate = new Date();
+      cardDate.setHours(parseInt(h));
+      cardDate.setMinutes(parseInt(m));
+      cardDate.setSeconds(0);
+      if(cardDate.getTime() === nextTime.getTime()){
+        card.classList.add('active');
+      }
+    });
+
+    // Countdown
+    const diff = nextTime - now;
+    const hours = Math.floor(diff / 1000 / 3600);
+    const minutes = Math.floor((diff / 1000 % 3600)/60);
+    const seconds = Math.floor(diff/1000 % 60);
+    countdownEl.innerText = `Menuju ${document.querySelector('.active .jadwal-title2').innerText}: ${hours}h ${minutes}m ${seconds}s`;
+  } else {
+    countdownEl.innerText = "Semua jadwal hari ini telah lewat";
+  }
+}
+
+// Event listener dropdown
+citySelect2.addEventListener('change', () => {
+  fetchJadwal2(citySelect2.value);
+});
+
+// Load default kota
+fetchJadwal2(citySelect2.value);
+</script>
 
 
 <style>
