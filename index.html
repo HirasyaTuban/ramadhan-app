@@ -306,11 +306,11 @@ color:#aaa;
 </style>
 
 <div style="margin-top:15px;">
-  <label for="citySelectCompact" style="font-size:12px;opacity:0.8;">
+  <label for="citySelectFinalTouch" style="font-size:12px;opacity:0.8;">
     Pilih Kota:
   </label>
 
-  <select id="citySelectCompact" class="notif-btn">
+  <select id="citySelectFinalTouch" class="notif-btn">
     <!-- Kota besar valid -->
     <option value="Jakarta">Jakarta</option>
     <option value="Bandung">Bandung</option>
@@ -331,95 +331,113 @@ color:#aaa;
   </select>
 </div>
 
-<div id="jadwalContainerCompact" style="margin-top:10px; display:flex; flex-wrap:wrap; gap:5px;"></div>
-<div id="countdownCompact" style="margin-top:5px; font-size:12px; font-weight:bold;"></div>
+<div id="jadwalContainerFinalTouch" style="margin-top:10px; display:flex; overflow-x:auto; gap:5px; padding-bottom:5px; scroll-behavior: smooth;"></div>
+<div id="countdownFinalTouch" style="margin-top:5px; font-size:12px; font-weight:bold;"></div>
 
 <style>
-.jadwal-card-compact {
-  flex: 1 1 80px;
-  min-width: 80px;
+.jadwal-card-final-touch {
+  flex: 0 0 80px;
   padding: 6px;
   border-radius: 5px;
   background: #f7f7f7;
   box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   font-size: 11px;
   text-align: center;
+  position: relative;
   transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
 }
-.jadwal-card-compact:hover {
+.jadwal-card-final-touch:hover {
   transform: translateY(-1px);
   box-shadow: 0 2px 5px rgba(0,0,0,0.12);
 }
-.jadwal-title-compact {
+.jadwal-title-final-touch {
   font-weight: bold;
   margin-bottom: 2px;
 }
-.imsak-compact { color:#e74c3c; }
-.sholat-compact { color:#2c3e50; }
-.active-compact {
+.imsak-final-touch { color:#e74c3c; }
+.sholat-final-touch { color:#2c3e50; }
+.active-final-touch {
   background:#ffeaa7 !important;
   transform: translateY(0px);
   box-shadow:0 2px 6px rgba(0,0,0,0.15);
 }
+
+/* Progress bar di bawah tiap kartu */
+.progress-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: #3498db;
+  width: 0%;
+  transition: width 1s linear;
+  border-radius: 2px;
+}
 </style>
 
 <script>
-const citySelectCompact = document.getElementById('citySelectCompact');
-const jadwalContainerCompact = document.getElementById('jadwalContainerCompact');
-const countdownCompact = document.getElementById('countdownCompact');
+const citySelectFinalTouch = document.getElementById('citySelectFinalTouch');
+const jadwalContainerFinalTouch = document.getElementById('jadwalContainerFinalTouch');
+const countdownFinalTouch = document.getElementById('countdownFinalTouch');
 
-let jadwalArrayGlobalCompact = [];
+let jadwalArrayGlobalFinalTouch = [];
+let lastSelectedCityFinalTouch = citySelectFinalTouch.value;
 
 // Ambil jadwal dengan fallback otomatis
-async function fetchJadwalCompact(city) {
+async function fetchJadwalFinalTouch(city) {
   try {
-    jadwalContainerCompact.innerHTML = "Loading...";
+    jadwalContainerFinalTouch.innerHTML = "Loading...";
     const url = `https://api.aladhan.com/v1/timingsByCity?city=${city}&country=Indonesia&method=11`;
     const response = await fetch(url);
     const data = await response.json();
 
     if (data.code === 200) {
+      // tetap menampilkan pilihan terakhir
+      citySelectFinalTouch.value = lastSelectedCityFinalTouch;
+
       const timings = data.data.timings;
-      jadwalArrayGlobalCompact = [
-        { name: 'Imsak', time: timings.Imsak, class: 'imsak-compact' },
-        { name: 'Subuh', time: timings.Fajr, class: 'sholat-compact' },
-        { name: 'Terbit', time: timings.Sunrise, class: 'sholat-compact' },
-        { name: 'Dzuhur', time: timings.Dhuhr, class: 'sholat-compact' },
-        { name: 'Ashar', time: timings.Asr, class: 'sholat-compact' },
-        { name: 'Maghrib', time: timings.Maghrib, class: 'sholat-compact' },
-        { name: 'Isya', time: timings.Isha, class: 'sholat-compact' },
+      jadwalArrayGlobalFinalTouch = [
+        { name: 'Imsak', time: timings.Imsak, class: 'imsak-final-touch' },
+        { name: 'Subuh', time: timings.Fajr, class: 'sholat-final-touch' },
+        { name: 'Terbit', time: timings.Sunrise, class: 'sholat-final-touch' },
+        { name: 'Dzuhur', time: timings.Dhuhr, class: 'sholat-final-touch' },
+        { name: 'Ashar', time: timings.Asr, class: 'sholat-final-touch' },
+        { name: 'Maghrib', time: timings.Maghrib, class: 'sholat-final-touch' },
+        { name: 'Isya', time: timings.Isha, class: 'sholat-final-touch' },
       ];
-      renderJadwalCompact();
-      updateActiveTimeCompact();
-      setInterval(updateActiveTimeCompact, 1000);
+      renderJadwalFinalTouch();
+      updateActiveTimeFinalTouch();
+      setInterval(updateActiveTimeFinalTouch, 1000);
     } else {
-      // fallback
-      const option = Array.from(citySelectCompact.options).find(o => o.text === city && o.dataset.fallbackFor);
+      // fallback otomatis kota kecil
+      const option = Array.from(citySelectFinalTouch.options).find(o => o.text === city && o.dataset.fallbackFor);
       if(option){
         console.warn(`Kota ${city} tidak ditemukan, fallback ke ${option.value}`);
-        fetchJadwalCompact(option.value);
+        lastSelectedCityFinalTouch = option.value;
+        fetchJadwalFinalTouch(option.value);
       } else {
-        jadwalContainerCompact.innerHTML = "Gagal mengambil jadwal. Gunakan kota besar.";
+        jadwalContainerFinalTouch.innerHTML = "Gagal mengambil jadwal. Gunakan kota besar.";
       }
     }
   } catch (error) {
     console.error("Error fetch API:", error);
-    jadwalContainerCompact.innerHTML = "Terjadi kesalahan saat memanggil API.";
+    jadwalContainerFinalTouch.innerHTML = "Terjadi kesalahan saat memanggil API.";
   }
 }
 
-function renderJadwalCompact() {
-  jadwalContainerCompact.innerHTML = jadwalArrayGlobalCompact.map(j => `
-    <div class="jadwal-card-compact" data-time="${j.time}">
-      <div class="jadwal-title-compact ${j.class}">${j.name}</div>
+function renderJadwalFinalTouch() {
+  jadwalContainerFinalTouch.innerHTML = jadwalArrayGlobalFinalTouch.map(j => `
+    <div class="jadwal-card-final-touch" data-time="${j.time}">
+      <div class="jadwal-title-final-touch ${j.class}">${j.name}</div>
       <div>${j.time}</div>
+      <div class="progress-bar"></div>
     </div>
   `).join('');
 }
 
-function updateActiveTimeCompact() {
+function updateActiveTimeFinalTouch() {
   const now = new Date();
-  const cards = document.querySelectorAll('.jadwal-card-compact');
+  const cards = document.querySelectorAll('.jadwal-card-final-touch');
   let nextTime = null;
 
   cards.forEach(card => {
@@ -429,7 +447,8 @@ function updateActiveTimeCompact() {
     cardDate.setMinutes(parseInt(m));
     cardDate.setSeconds(0);
 
-    card.classList.remove('active-compact');
+    card.classList.remove('active-final-touch');
+    card.querySelector('.progress-bar').style.width = "0%";
 
     if (cardDate > now && (!nextTime || cardDate < nextTime)) nextTime = cardDate;
   });
@@ -441,26 +460,44 @@ function updateActiveTimeCompact() {
       cardDate.setHours(parseInt(h));
       cardDate.setMinutes(parseInt(m));
       cardDate.setSeconds(0);
-      if(cardDate.getTime() === nextTime.getTime()) card.classList.add('active-compact');
+      if(cardDate.getTime() === nextTime.getTime()) {
+        card.classList.add('active-final-touch');
+        const diffTotal = cardDate - now;
+        let progress = 0;
+        // animasi progress bar 1 detik update
+        const interval = setInterval(()=>{
+          const now2 = new Date();
+          const elapsed = now2 - (cardDate - diffTotal);
+          progress = Math.min((elapsed/diffTotal)*100,100);
+          card.querySelector('.progress-bar').style.width = progress + "%";
+          if(progress>=100) clearInterval(interval);
+        },1000);
+      }
     });
 
     const diff = nextTime - now;
     const hours = Math.floor(diff / 1000 / 3600);
     const minutes = Math.floor((diff / 1000 % 3600)/60);
     const seconds = Math.floor(diff/1000 % 60);
-    countdownCompact.innerText = `Menuju ${document.querySelector('.active-compact .jadwal-title-compact').innerText}: ${hours}h ${minutes}m ${seconds}s`;
+    countdownFinalTouch.innerText = `Menuju ${document.querySelector('.active-final-touch .jadwal-title-final-touch').innerText}: ${hours}h ${minutes}m ${seconds}s`;
   } else {
-    countdownCompact.innerText = "Semua jadwal hari ini telah lewat";
+    countdownFinalTouch.innerText = "Semua jadwal hari ini telah lewat";
   }
 }
 
 // Event listener dropdown
-citySelectCompact.addEventListener('change', () => {
-  fetchJadwalCompact(citySelectCompact.value);
+citySelectFinalTouch.addEventListener('change', () => {
+  lastSelectedCityFinalTouch = citySelectFinalTouch.value;
+  fetchJadwalFinalTouch(citySelectFinalTouch.value);
 });
 
 // Load default kota
-fetchJadwalCompact(citySelectCompact.value);
+fetchJadwalFinalTouch(citySelectFinalTouch.value);
+
+// Tambahan: touch/drag smooth di mobile (native scroll sudah smooth di modern browser)
+jadwalContainerFinalTouch.addEventListener('touchstart', e => {
+  e.stopPropagation();
+});
 </script>
 
 <style>
