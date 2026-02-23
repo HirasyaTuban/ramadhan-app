@@ -9,7 +9,6 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-
 .footer small{
   opacity:0.6;
   font-size:11px;
@@ -259,6 +258,7 @@ body.ramadhan-mode .motivasi-sholat{
   }
 }
 
+
 .footer{
 text-align:center;
 font-size:13px;
@@ -269,7 +269,40 @@ color:#aaa;
 </head>
 
 <body>
+
+<div id="splash-screen">
+  <div class="splash-content">
+    <img src="./icon-192.png" width="100">
+    <h2>Ramadhan & Tadabbur</h2>
+  </div>
+</div>
+
 <div class="app">
+
+<style>
+#splash-screen {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: #0e0e0e;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  flex-direction: column;
+  color: white;
+}
+
+.splash-content {
+  text-align: center;
+  animation: fadeIn 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+</style>
 
 <!-- TAB 1 -->
 <div id="tab1" class="tab active">
@@ -1285,6 +1318,55 @@ if ("serviceWorker" in navigator) {
 }
 </script>
 
+<script>
+window.addEventListener("load", function() {
+  setTimeout(function() {
+    document.getElementById("splash-screen").style.display = "none";
+  }, 1500);
+});
+</script>
+
+<script>
+function scheduleImsakNotification(hour, minute) {
+
+  if (Notification.permission !== "granted") {
+    console.log("Notification belum diizinkan");
+    return;
+  }
+
+  const now = new Date();
+  const target = new Date();
+
+  target.setHours(hour);
+  target.setMinutes(minute);
+  target.setSeconds(0);
+
+  // Kalau waktu sudah lewat hari ini → set untuk besok
+  if (target <= now) {
+    target.setDate(target.getDate() + 1);
+  }
+
+  const timeout = target.getTime() - now.getTime();
+
+  setTimeout(() => {
+    navigator.serviceWorker.getRegistration().then(reg => {
+      if (reg) {
+        reg.showNotification("⏰ Waktu Imsak", {
+          body: "Persiapkan diri untuk sahur",
+          icon: "./icon-192.png",
+          badge: "./icon-192.png"
+        });
+      }
+    });
+  }, timeout);
+
+  console.log("Imsak dijadwalkan dalam", timeout / 1000, "detik");
+}
+</script>
+
+<script>
+scheduleImsakNotification(4, 15); // jam 04:15
+</script>
 
 </body>
 </html>
