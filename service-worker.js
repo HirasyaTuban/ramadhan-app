@@ -1,18 +1,16 @@
-const CACHE_NAME = "ramadhan-app-v10";// ganti versi supaya refresh cache
+const CACHE_NAME = "ramadhan-app-v2"; // ← ganti versi kalau update
 
 const urlsToCache = [
-  "./",
-  "./index.html",
-  "./app.html",
-  "./manifest.json",
-  "./icon-192.png",
-  "./icon-512.png"
-  "./offline.html",
+  "/",
+  "/app.html",
+  "/manifest.json",
+  "/icon-192.png",
+  "/icon-512.png"
 ];
 
 // Install
 self.addEventListener("install", event => {
-  self.skipWaiting();
+  self.skipWaiting(); // langsung aktif
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(urlsToCache))
@@ -26,30 +24,26 @@ self.addEventListener("activate", event => {
       return Promise.all(
         keys.map(key => {
           if (key !== CACHE_NAME) {
-            return caches.delete(key);
+            return caches.delete(key); // hapus cache lama
           }
         })
       );
     })
   );
-  self.clients.claim();
+  self.clients.claim(); // langsung kontrol semua tab
 });
 
 // Fetch
 self.addEventListener("fetch", event => {
   event.respondWith(
     fetch(event.request)
-      .catch(() => {
-        return caches.match(event.request)
-          .then(response => {
-            return response || caches.match("./offline.html");
+      .then(response => {
+        return caches.open(CACHE_NAME)
+          .then(cache => {
+            cache.put(event.request, response.clone());
+            return response;
           });
       })
+      .catch(() => caches.match(event.request))
   );
-});
-
-self.addEventListener("message", event => {
-  if (event.data === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
 });
