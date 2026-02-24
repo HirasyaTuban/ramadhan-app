@@ -1,4 +1,4 @@
-const CACHE_NAME = "ramadhan-app-v2"; // ← ganti versi kalau update
+const CACHE_NAME = "ramadhan-app-v1a"; // ← ganti versi kalau update
 
 const urlsToCache = [
   "/",
@@ -46,4 +46,24 @@ self.addEventListener("fetch", event => {
       })
       .catch(() => caches.match(event.request))
   );
+});
+
+document.addEventListener("DOMContentLoaded", function(){
+
+  if(!localStorage.getItem("installPopupShown")){
+
+    setTimeout(function(){
+      alert(
+        "Pasang Aplikasi\n\n" +
+        "Agar lebih mudah diakses, tambahkan aplikasi ini ke layar utama (Home Screen) HP Anda.\n\n" +
+        "1. Tekan menu titik tiga di pojok kanan atas browser Chrome\n" +
+        "2. Pilih menu 'Install App' atau 'Tambahkan ke Layar Utama'"
+      );
+
+      localStorage.setItem("installPopupShown","yes");
+
+    }, 2000);
+
+  }
+
 });

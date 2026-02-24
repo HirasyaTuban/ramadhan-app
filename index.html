@@ -34,6 +34,11 @@ color:#fff;
   transition:0.2s;
 }
 
+@keyframes runText {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+
 .mode-btn.active{
   background:#ffb300;
   color:#000;
@@ -200,6 +205,54 @@ background:#ffb300;
 width:0%;
 }
 
+.motivasi-quote{
+  position: relative;
+  overflow: hidden;
+
+  font-size:14px;
+  line-height:1.7;
+  padding:18px;
+  border-radius:16px;
+  margin-bottom:16px;
+  text-align:center;
+
+  background: linear-gradient(145deg, rgba(255,179,0,0.08), rgba(255,140,0,0.05));
+  border: 1px solid rgba(255,179,0,0.25);
+
+  color: #ffcc66;
+
+  box-shadow: 
+    0 4px 15px rgba(255,179,0,0.15),
+    inset 0 0 8px rgba(255,179,0,0.08);
+
+  backdrop-filter: blur(6px);
+
+  animation: fadeInGlow 0.8s ease;
+}
+
+.motivasi-quote::before{
+  content: "📖 ";
+}
+
+.motivasi-quote::after{
+  content: "✨";
+  position: absolute;
+  top: 8px;
+  right: 14px;
+  font-size: 20px;
+  opacity: 0.08;
+}
+
+.quote-text{
+  font-style: italic;
+  margin-bottom:8px;
+}
+
+.quote-author{
+  font-size:12px;
+  color:#aaa;
+}
+
 .motivasi-sholat{
   position: relative;
   overflow: hidden;
@@ -273,6 +326,41 @@ color:#aaa;
 
 <!-- TAB 1 -->
 <div id="tab1" class="tab active">
+
+<div class="motivasi-quote">
+  <div class="quote-text">
+    “Hisablah dirimu sebelum dihisab Allah”
+  </div>
+  <div class="quote-author">
+    — Umar bin Khattab RA
+  </div>
+</div>
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+    <h3 style="margin:0;">Jadwal Sholat Hari Ini</h3>
+    <select id="citySelect" onchange="loadPrayerTimes()" style="background:#111;color:#fff;border-radius:8px;padding:6px;">
+      <option value="Tuban">Tuban</option>
+      <option value="Surabaya">Surabaya</option>
+      <option value="Jakarta">Jakarta</option>
+      <option value="Bandung">Bandung</option>
+      <option value="Yogyakarta">Yogyakarta</option>
+      <option value="Malang">Malang</option>
+      <option value="Semarang">Semarang</option>
+    </select>
+  </div>
+
+  <div style="overflow:hidden;white-space:nowrap;">
+    <div id="runningPrayer" style="display:inline-block;padding-left:100%;animation:runText 25s linear infinite;">
+      Memuat jadwal...
+    </div>
+  </div>
+
+  <div id="countdownSholat" style="margin-top:10px;font-weight:bold;text-align:center;">
+    Menghitung waktu sholat...
+  </div>
+</div>
+
 
 <div class="card">
   <h3>Mode Program</h3>
@@ -411,6 +499,34 @@ menunda-nunda bisa jadi tanda hati yang mulai lalai.
   <input id="userName" placeholder="Masukkan Nama Anda">
   <button onclick="saveUserName()">Simpan Nama</button>
 </div>
+
+
+<div id="donasiCard" class="card" style="display:none;text-align:center;">
+  <h3>🤲 Dukung Pengembangan Aplikasi</h3>
+
+  <p style="font-size:14px;line-height:1.6;">
+    Jika aplikasi ini bermanfaat, Anda dapat mendukung pengembangannya
+    melalui donasi sukarela.
+  </p>
+
+  <div style="
+    background:#111;
+    padding:12px;
+    border-radius:12px;
+    margin:10px 0;
+    font-size:14px;
+    line-height:1.6;
+  ">
+    <b>Bank Syariah Indonesia (BSI)</b><br>
+    a.n Sugiharto<br>
+    7146625481
+  </div>
+
+  <small style="display:block;margin-top:8px;color:#aaa;">
+    Tidak wajib. Semoga menjadi amal jariyah 🌙
+  </small>
+</div>
+
 
 <div class="card footer">
 © 2026 <b>Sugiharto</b><br>
@@ -704,6 +820,18 @@ function updateStreak(){
   document.getElementById("streakText")
     .textContent =
     "🔥 Streak: " + streak + " hari";
+}
+
+function checkDonasiPeriod(){
+
+  if(programMode !== "ramadhan") return;
+
+  const ramadhanDay = getRamadhanDay();
+
+  if(ramadhanDay >= 21){
+    document.getElementById("donasiCard").style.display = "block";
+  }
+
 }
 
 function updateChallengeProgress(){
@@ -1210,6 +1338,76 @@ setInterval(function(){
   }
 }, 60000);
 
+
+const prayerCities = {
+  "Tuban": { lat: -6.8946, lon: 112.0503 },
+  "Surabaya": { lat: -7.2575, lon: 112.7521 },
+  "Jakarta": { lat: -6.2088, lon: 106.8456 },
+  "Bandung": { lat: -6.9175, lon: 107.6191 },
+  "Yogyakarta": { lat: -7.7956, lon: 110.3695 },
+  "Malang": { lat: -7.9666, lon: 112.6326 },
+  "Semarang": { lat: -6.9667, lon: 110.4167 }
+};
+
+let prayerTimes = [];
+
+function loadPrayerTimes() {
+  const city = document.getElementById("citySelect").value;
+  const { lat, lon } = prayerCities[city];
+
+  fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=11`)
+    .then(res => res.json())
+    .then(data => {
+
+      const t = data.data.timings;
+
+      prayerTimes = [
+        { name: "Imsak", time: t.Imsak },
+        { name: "Subuh", time: t.Fajr },
+        { name: "Zuhur", time: t.Dhuhr },
+        { name: "Ashar", time: t.Asr },
+        { name: "Maghrib", time: t.Maghrib },
+        { name: "Isya", time: t.Isha }
+      ];
+
+      document.getElementById("runningPrayer").innerHTML =
+        prayerTimes.map(p => `${p.name} ${p.time}`).join(" • ");
+
+      updateCountdown();
+    });
+}
+
+function updateCountdown() {
+  const now = new Date();
+
+  let nextPrayer = null;
+
+  for (let p of prayerTimes) {
+    const [h, m] = p.time.split(":");
+    const prayerDate = new Date();
+    prayerDate.setHours(h, m, 0);
+
+    if (prayerDate > now) {
+      nextPrayer = { ...p, date: prayerDate };
+      break;
+    }
+  }
+
+  if (!nextPrayer) return;
+
+  const diff = nextPrayer.date - now;
+
+  const h = Math.floor(diff / (1000 * 60 * 60));
+  const m = Math.floor((diff / (1000 * 60)) % 60);
+  const s = Math.floor((diff / 1000) % 60);
+
+  document.getElementById("countdownSholat").innerText =
+    `Menuju ${nextPrayer.name} dalam ${h}j ${m}m ${s}d`;
+}
+
+setInterval(updateCountdown, 1000);
+
+
 // jalankan init
 loadSyukur();
 renderSholat();
@@ -1218,6 +1416,8 @@ updateQuranChart();
 updateRekap();
 setMode(programMode);
 updateStreak();
+loadPrayerTimes();
+checkDonasiPeriod();
 
 </script>
 
