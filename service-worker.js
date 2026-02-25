@@ -1,5 +1,4 @@
-const CACHE_NAME = "ramadhan-app-v1a"; // ← ganti versi kalau update
-
+const CACHE_NAME = "ramadhan-app-v4b";
 const urlsToCache = [
   "/",
   "/app.html",
@@ -8,62 +7,36 @@ const urlsToCache = [
   "/icon-512.png"
 ];
 
-// Install
+async function cacheFiles(cacheName, files) {
+  const cache = await caches.open(cacheName);
+  for (const file of files) {
+    try { await cache.add(file); }
+    catch(err) { console.warn("Gagal cache file:", file, err); }
+  }
+}
+
 self.addEventListener("install", event => {
-  self.skipWaiting(); // langsung aktif
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
-  );
+  self.skipWaiting();
+  event.waitUntil(cacheFiles(CACHE_NAME, urlsToCache));
 });
 
-// Activate
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key); // hapus cache lama
-          }
-        })
-      );
-    })
+    caches.keys().then(keys => 
+      Promise.all(keys.map(key => {
+        if (key !== CACHE_NAME) return caches.delete(key);
+      }))
+    )
   );
-  self.clients.claim(); // langsung kontrol semua tab
+  self.clients.claim();
 });
 
-// Fetch
 self.addEventListener("fetch", event => {
   event.respondWith(
     fetch(event.request)
-      .then(response => {
-        return caches.open(CACHE_NAME)
-          .then(cache => {
-            cache.put(event.request, response.clone());
-            return response;
-          });
-      })
+      .then(response => caches.open(CACHE_NAME)
+        .then(cache => { cache.put(event.request, response.clone()); return response; })
+      )
       .catch(() => caches.match(event.request))
   );
-});
-
-document.addEventListener("DOMContentLoaded", function(){
-
-  if(!localStorage.getItem("installPopupShown")){
-
-    setTimeout(function(){
-      alert(
-        "Pasang Aplikasi\n\n" +
-        "Agar lebih mudah diakses, tambahkan aplikasi ini ke layar utama (Home Screen) HP Anda.\n\n" +
-        "1. Tekan menu titik tiga di pojok kanan atas browser Chrome\n" +
-        "2. Pilih menu 'Install App' atau 'Tambahkan ke Layar Utama'"
-      );
-
-      localStorage.setItem("installPopupShown","yes");
-
-    }, 2000);
-
-  }
-
 });
