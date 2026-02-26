@@ -415,16 +415,29 @@ color:#aaa;
 <div class="card">
   <h3>Jadwal Sholat Hari Ini</h3>
 
-  <input id="citySelect"
-         placeholder="Masukkan nama kota (contoh: Tuban)"
-         style="width:100%;padding:8px;border-radius:8px;background:#111;color:#fff;border:none;margin-bottom:10px;"
-         onblur="loadPrayerTimes()">
+<select id="citySelect"
+        style="width:100%;padding:10px;border-radius:10px;background:#111;color:#fff;border:none;margin-bottom:8px;">
+</select>
+
+<button onclick="saveCity()" style="margin-bottom:10px;">
+  💾 Simpan Kota
+</button>
 
   <div style="overflow:hidden;white-space:nowrap;">
     <div id="runningPrayer" style="display:inline-block;padding-left:100%;animation:runText 25s linear infinite;">
       Memuat jadwal...
     </div>
   </div>
+
+<div id="currentPrayerBox" style="
+  text-align:center;
+  margin-top:12px;
+  padding:12px;
+  border-radius:12px;
+  background:rgba(255,179,0,0.08);
+  font-weight:bold;
+  font-size:18px;">
+</div>
 
   <div id="countdownSholat" style="margin-top:10px;font-weight:bold;text-align:center;">
     Menghitung waktu sholat...
@@ -710,6 +723,30 @@ function saveUserName(){
   alert("Nama disimpan");
 }
 
+function updateCurrentPrayer(){
+
+ if(!prayerTimes || prayerTimes.length === 0) return;
+  const now = new Date();
+  let nextPrayer = null;
+
+  for (let p of prayerTimes) {
+    const [h, m] = p.time.split(":");
+    const prayerDate = new Date();
+    prayerDate.setHours(h, m, 0);
+
+    if (prayerDate > now) {
+      nextPrayer = { ...p, date: prayerDate };
+      break;
+    }
+  }
+
+  if(!nextPrayer) return;
+
+  document.getElementById("currentPrayerBox").innerHTML =
+    "🕌 " + nextPrayer.name + " - " + nextPrayer.time;
+}
+
+
 function exportPDF(){
 
   const name =
@@ -862,6 +899,20 @@ if(programMode === "ramadhan"){
   updateChallengeProgress();
 }
 
+function saveCity(){
+  const city = document.getElementById("citySelect").value;
+
+  if(!city){
+    alert("Pilih kota dulu.");
+    return;
+  }
+
+  localStorage.setItem("selectedCity", city);
+  alert("Kota disimpan ✔");
+
+  loadPrayerTimes();
+}
+
 function completeChallenge(){
 
   const key =
@@ -937,6 +988,7 @@ function checkPrayerNotification(){
 }
 
 setInterval(checkPrayerNotification, 60000);
+setInterval(updateCurrentPrayer, 60000);
 
 
 function checkLastTenDays(){
@@ -1490,6 +1542,8 @@ const prayerCities = {
 
 let prayerTimes = [];
 
+
+
 function loadPrayerTimes() {
 
   let city = document.getElementById("citySelect").value.trim();
@@ -1584,6 +1638,22 @@ document.addEventListener("DOMContentLoaded", function(){
 
 });
 
+// === ISI DROPDOWN KOTA ===
+const citySelect = document.getElementById("citySelect");
+
+Object.keys(prayerCities).forEach(city => {
+  const option = document.createElement("option");
+  option.value = city;
+  option.textContent = city;
+  citySelect.appendChild(option);
+});
+
+
+const savedCity = localStorage.getItem("selectedCity");
+if(savedCity){
+  document.getElementById("citySelect").value = savedCity;
+}
+
 
 // jalankan init
 loadSyukur();
@@ -1596,6 +1666,7 @@ updateStreak();
 loadPrayerTimes();
 checkDonasiPeriod();
 checkLastTenDays();
+updateCurrentPrayer();
 
 </script>
 
