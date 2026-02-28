@@ -518,6 +518,45 @@ color:#aaa;
   }
 }
 
+.quran-reflection-card{
+  margin:16px 0 20px;
+  padding:18px;
+  border-radius:18px;
+  background:linear-gradient(145deg,#0f2027,#203a43,#2c5364);
+  box-shadow:0 8px 25px rgba(0,0,0,0.4);
+  border:1px solid rgba(255,255,255,0.05);
+  position:relative;
+  overflow:hidden;
+}
+
+.quran-reflection-card::before{
+  content:"﷽";
+  position:absolute;
+  top:-10px;
+  right:10px;
+  font-size:70px;
+  opacity:0.05;
+}
+
+.quran-reflection-text{
+  font-style:italic;
+  line-height:1.6;
+  text-align:center;
+  font-size:15px;
+  opacity:0.9;
+}
+
+.quran-reflection-card{
+  animation:fadeQuran 1.2s ease;
+}
+
+@keyframes fadeQuran{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+background:rgba(255,255,255,0.03);
+
 .install-buttons button {
   flex: 1;
   padding: 8px;
@@ -692,10 +731,18 @@ menunda-nunda bisa jadi tanda hati yang mulai lalai.
 
 <!-- TAB 3: QURAN -->
 <div id="tab3" class="tab">
+<div class="quran-reflection-card">
+  <div class="quran-reflection-text">
+    Ya Allah… dia membacaku.<br>
+    Dia menjaga ayat-ayat-Mu…<br>
+    Jadikan Al-Qur’an cahaya dalam hidupnya.
+  </div>
+</div>
   <div class="card">
     <h3>📖 Jurnal Qur’an</h3>
     <small id="quranDate"></small>
   </div>
+
 
   <div class="card">
     <h3>Target Harian (Halaman)</h3>
@@ -813,6 +860,15 @@ if(!localStorage.programMode){
 
 let programMode = localStorage.programMode;
 
+const quranReflections = [
+"Sesungguhnya bersama kesulitan ada kemudahan. (QS. Al-Insyirah: 6)",
+"Dan bersabarlah, sesungguhnya Allah bersama orang-orang yang sabar. (QS. Al-Anfal: 46)",
+"Ingatlah, hanya dengan mengingat Allah hati menjadi tenang. (QS. Ar-Ra’d: 28)",
+"Maka nikmat Tuhanmu yang manakah yang kamu dustakan? (QS. Ar-Rahman)",
+"Allah tidak membebani seseorang melainkan sesuai kesanggupannya. (QS. Al-Baqarah: 286)",
+"Barang siapa bertakwa kepada Allah, niscaya Dia akan membukakan jalan keluar. (QS. At-Talaq: 2)"
+];
+
 // ===== AMBIL SEMUA ELEMENT DOM =====
 
 const challengeDay = document.getElementById("challengeDay");
@@ -909,6 +965,19 @@ function updateCurrentPrayer(){
     "🕌 " + nextPrayer.name + " - " + nextPrayer.time;
 }
 
+
+function getDailyAyat(){
+  const today = new Date();
+  const index = today.getDate() % quranReflections.length;
+  return quranReflections[index];
+}
+
+document.querySelector(".quran-reflection-text")
+  .innerHTML = `
+  Ya Allah… dia membacaku.<br>
+  Dia menjaga ayat-ayat-Mu…<br><br>
+  <strong>${getDailyAyat()}</strong>
+`;
 
 function exportPDF(){
 
