@@ -8,7 +8,6 @@
 <meta name="theme-color" content="#0e0e0e">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-
 <style>
 
 .footer small{
@@ -323,25 +322,12 @@ body.ramadhan-mode .motivasi-sholat{
   }
 }
 
-.reset-btn{
-  background:transparent;
-  border:1px solid #ff5252;
-  color:#ff5252;
-  border-radius:10px;
-  padding:6px 10px;
-  font-size:12px;
-}
-
 .footer{
 text-align:center;
 font-size:13px;
 color:#aaa;
 }
 
-.card{
-  margin-bottom:14px;
-  border-radius:16px;
-}
 
 .install-card.show {
   bottom: 30px;
@@ -406,7 +392,14 @@ color:#aaa;
   margin-top: 12px;
 }
 
-
+.challenge-premium{
+  margin-top:20px;
+  padding:18px;
+  border-radius:22px;
+  background:linear-gradient(145deg,#121212,#1b1b1b);
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  border:1px solid rgba(255,255,255,0.05);
+}
 
 .challenge-phase{
   text-align:center;
@@ -430,34 +423,10 @@ color:#aaa;
   100%{transform:scale(1);}
 }
 
-.challenge-premium{
-  margin-top:20px;
-  padding:22px;
-  border-radius:24px;
-  background:#141414;
-  border:1px solid rgba(255,179,0,0.15);
-  box-shadow:0 10px 25px rgba(0,0,0,0.5);
-}
-
-.challenge-phase{
-  text-align:center;
-  padding:6px 14px;
-  border-radius:20px;
-  background:rgba(255,179,0,0.12);
-  color:#ffcc66;
-  font-size:11px;
-  letter-spacing:1px;
-  display:inline-block;
-  margin:auto;
-}
-
 .challenge-big{
   text-align:center;
-  font-size:26px;
-  margin:14px 0 6px;
-  font-weight:700;
-  color:#ffcc66;
-  text-shadow:0 0 10px rgba(255,179,0,0.2);
+  font-size:28px;
+  margin:16px 0 8px;
 }
 
 .challenge-focus{
@@ -676,32 +645,44 @@ background:rgba(255,255,255,0.03);
   </div>
 
   <h1 id="challengeTitle" class="challenge-big"></h1>
-
-  <div id="challengeDay" style="text-align:center;font-size:13px;opacity:0.6;margin-top:6px;"></div>
+  
+  <div id="challengeDay" style="
+  text-align:center;
+  font-size:13px;
+  opacity:0.7;
+  margin-top:8px;">
+</div>
 
   <div id="challengeFocus" class="challenge-focus"></div>
   <div id="challengeDalil" class="challenge-quote"></div>
 
   <div class="mission-card">
-    <div class="mission-title">Misi Hari Ini</div>
-    <div id="challengeMission"></div>
+    <div class="mission-title">⚡ Misi Utama</div>
+    <div id="challengeMission" class="mission-text"></div>
 
-    <button id="challengeBtn" class="mission-btn" onclick="completeChallenge()">
-      ✔ Tandai Selesai
+    <button id="challengeBtn"
+            class="mission-btn"
+            onclick="completeChallenge()">
+      ✔ Telah Dikerjakan
     </button>
 
     <div id="challengeStatus" class="mission-status"></div>
   </div>
 
-  <!-- PROGRESS CHART CLEAN -->
-  <div style="margin-top:20px;">
-    <canvas id="challengeChart"></canvas>
-  </div>
-
 </div>
 
-<canvas id="challengeChart"></canvas> 
+<div class="enemy-card">
+  <div class="enemy-title">Challenge Now</div>
+  <div id="challengeEnemy"></div>
+</div>
 
+<div class="card">
+<h3>Progress Challenge</h3>
+<div class="progress-container">
+<div id="challengeProgress" class="progress-bar"></div>
+</div>
+<small id="challengeProgressText"></small>
+</div>
 
 </div>
 
@@ -713,13 +694,6 @@ background:rgba(255,255,255,0.03);
   color:#ffcc66;
   letter-spacing:1px;">
   🌙 10 Hari Terakhir Ramadhan
-</div>
-
-<div id="challengeSummary"
-     style="text-align:center;
-            font-size:14px;
-            opacity:0.7;
-            margin-bottom:10px;">
 </div>
 
 
@@ -744,6 +718,7 @@ menunda-nunda bisa jadi tanda hati yang mulai lalai.
 
 <div class="card">
 <h3>Grafik Ibadah 30 Hari</h3>
+<canvas id="ibadahChart" height="140"></canvas>
 </div>
 
 <div class="card">
@@ -1180,8 +1155,6 @@ function completeChallenge(){
 
   challengeBtn.disabled = true;
   challengeStatus.textContent = "✔ Selesai";
-  challengeSummary.textContent =
-  done + " / 30 Hari • Streak " + streak + " Hari";
 
 document.getElementById("challengeBtn").style.background = "#00c853";
 document.getElementById("challengeBtn").innerText = "✔ Selesai Hari Ini";
@@ -1287,7 +1260,34 @@ function checkDonasiPeriod(){
 
 }
 
+function updateChallengeProgress(){
 
+  let done = 0;
+
+  const duration =
+    programMode === "ramadhan"
+      ? RAMADHAN_DURATION
+      : TADABBUR_DURATION;
+
+  for(let i=0;i<duration;i++){
+
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+
+    const key =
+      programMode +
+      "_challenge_" +
+      d.toISOString().split("T")[0];
+
+    if(localStorage[key]) done++;
+  }
+
+  challengeProgress.style.width =
+    (done/duration*100)+"%";
+
+  challengeProgressText.textContent =
+    done+" / " + duration + " hari";
+}
 /* =========================
    IBADAH SYSTEM
 ========================= */
@@ -1405,6 +1405,7 @@ function setMode(mode){
 
   console.log("Mode:", mode);
 
+  /* TAMBAHKAN DI SINI */
   if(mode === "ramadhan"){
     document.body.classList.add("ramadhan-mode");
   }else{
@@ -1412,9 +1413,6 @@ function setMode(mode){
   }
 
   loadChallenge();
-
-  // 🔥 TAMBAHKAN INI
-  updateChart();
 }
 
 function resetProgram(){
@@ -1454,114 +1452,44 @@ function resetProgram(){
    IBADAH CHART
 ========================= */
 
+let chart=null;
+
 function updateChart(){
 
-  const labels=[];
-  const data=[];
+  const labels=[],data=[];
 
   for(let i=29;i>=0;i--){
-
     const d=new Date();
     d.setDate(d.getDate()-i);
     const k=d.toISOString().split("T")[0];
-
     labels.push(d.getDate());
-
-    if(programMode === "ramadhan"){
-      const key = programMode + "_challenge_" + k;
-      data.push(localStorage[key] ? 1 : 0);
-    } else {
-      data.push(+localStorage["ibadah_percent_"+k] || 0);
-    }
+    data.push(
+      +localStorage["ibadah_percent_"+k]||0
+    );
   }
 
   if(chart) chart.destroy();
 
   chart=new Chart(ibadahChart,{
-    type: programMode === "ramadhan" ? "bar" : "line",
+    type:"line",
     data:{
       labels,
       datasets:[{
         data,
         borderColor:"#ffb300",
-        backgroundColor:
-          programMode === "ramadhan"
-          ? "#00c853"
-          : "rgba(255,179,0,0.2)",
-        fill: programMode !== "ramadhan"
+        fill:true
       }]
     },
     options:{
       plugins:{legend:{display:false}},
-      scales:{
-        y:{
-          min:0,
-          max: programMode === "ramadhan" ? 1 : 100,
-          ticks:{
-            stepSize: programMode === "ramadhan" ? 1 : 20
-          }
-        }
-      }
+      scales:{y:{min:0,max:100}}
     }
   });
 }
 
-function updateChallengeProgress(){
-
-  let done = 0;
-  const duration =
-    programMode === "ramadhan"
-      ? RAMADHAN_DURATION
-      : TADABBUR_DURATION;
-
-  const labels=[];
-  const data=[];
-
-  for(let i=29;i>=0;i--){
-
-    const d=new Date();
-    d.setDate(d.getDate()-i);
-    const k=d.toISOString().split("T")[0];
-
-    labels.push(d.getDate());
-
-    const key =
-      programMode + "_challenge_" + k;
-
-    if(localStorage[key]){
-      done++;
-      data.push(1);
-    } else {
-      data.push(0);
-    }
-  }
-
-  // === UPDATE PROGRESS BAR ===
-  challengeProgress.style.width =
-    (done/duration*100)+"%";
-
-  challengeProgressText.textContent =
-    done+" / " + duration + " hari";
-
-  // === UPDATE CHART ===
-  if(challengeChart) challengeChart.destroy();
-
-  challengeChart = new Chart(challengeCanvas,{
-    type:"bar",
-    data:{
-      labels,
-      datasets:[{
-        data,
-        backgroundColor:"#00c853"
-      }]
-    },
-    options:{
-      plugins:{legend:{display:false}},
-      scales:{y:{min:0,max:1,ticks:{stepSize:1}}}
-    }
-  });
-}
-
+/* =========================
+   QURAN SYSTEM
+========================= */
 
 /* =========================
    QURAN SYSTEM (SAFE VERSION)
@@ -1931,19 +1859,23 @@ setInterval(updateCountdown, 1000);
 
 document.addEventListener("DOMContentLoaded", function(){
 
-  chart = null;
-  challengeChart = null;
+  if(!localStorage.getItem("installPopupShown")){
 
-  ibadahChart =
-    document.getElementById("ibadahChart");
+    setTimeout(function(){
+      alert(
+        "Pasang Aplikasi\n\n" +
+        "Agar lebih mudah diakses, tambahkan aplikasi ini ke layar utama (Home Screen) HP Anda.\n\n" +
+        "1. Tekan menu titik tiga di pojok kanan atas browser Chrome\n" +
+        "2. Pilih menu 'Install App' atau 'Tambahkan ke Layar Utama'"
+      );
 
-  challengeCanvas =
-    document.getElementById("challengeChart");
+      localStorage.setItem("installPopupShown","yes");
 
-  updateChart();
+    }, 2000);
+
+  }
 
 });
-
 
 // === ISI DROPDOWN KOTA ===
 const citySelect = document.getElementById("citySelect");
@@ -2026,11 +1958,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
 <script>
-let chart;
-let challengeChart;
-
 document.addEventListener("DOMContentLoaded", () => {
-
   // Ambil elemen
   const installCard = document.getElementById("installCard");
   const installBtn = document.getElementById("installBtn");
@@ -2075,9 +2003,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 </script>
-
-
-</body>
 
 
 </body>
