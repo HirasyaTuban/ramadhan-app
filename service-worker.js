@@ -1,4 +1,4 @@
-const CACHE_NAME = "ramadhan-app-v4g";
+const CACHE_NAME = "ramadhan-app-v4q";
 const urlsToCache = [
   "/",
   "/app.html",
