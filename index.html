@@ -60,8 +60,9 @@ padding-bottom:80px;
 
 .chart-wrapper{
   position:relative;
-  height:120px;
+  height:110px;
   width:100%;
+  margin-top:10px;
 }
 
 .chart-wrapper canvas{
@@ -90,13 +91,14 @@ h3{margin:0 0 10px;}
 small{color:#aaa;}
 
 button{
-width:100%;
-padding:12px;
-border:none;
-border-radius:12px;
-background:#ffb300;
-font-weight:bold;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:#ffb300;
+  font-weight:bold;
+  cursor:pointer;
 }
+
 
 button:disabled{
 background:#333;
@@ -192,28 +194,32 @@ color:#aaa;
 }
 
 .progress-container{
-width:100%;
-height:16px;
-background:#333;
-border-radius:10px;
-overflow:hidden;
+  width:100%;
+  margin-top:8px;
 }
 
 .progress-bar{
-  height:10px;
+  width:100%;
+  height:14px;
+  background:#2b2b2b;
   border-radius:10px;
-  background:rgba(255,255,255,0.08);
   overflow:hidden;
-  margin-top:14px;
+  box-shadow: inset 0 0 4px rgba(0,0,0,0.6);
 }
 
 .progress-fill{
+  width:0%;
   height:100%;
+  background:linear-gradient(90deg,#ffb300,#ffd54f);
   border-radius:10px;
-  background:linear-gradient(90deg,#00c9a7,#92fe9d);
   transition:width 0.6s ease;
+  box-shadow:0 0 10px rgba(255,179,0,0.5);
 }
 
+.progress-fill.gold{
+  background:linear-gradient(90deg,#ffd700,#ffb300,#fff176);
+  box-shadow:0 0 12px rgba(255,215,0,0.7);
+}
 
 .motivasi-quote{
   position: relative;
@@ -421,12 +427,6 @@ color:#aaa;
   0%{transform:scale(1);}
   50%{transform:scale(1.08);}
   100%{transform:scale(1);}
-}
-
-.challenge-big{
-  text-align:center;
-  font-size:28px;
-  margin:16px 0 8px;
 }
 
 .challenge-focus{
@@ -638,11 +638,24 @@ color:#aaa;
 </div>
 
 <div class="card">
-<h3>Progress Challenge</h3>
-<div class="progress-container">
-<div id="challengeProgress" class="progress-bar"></div>
-</div>
-<small id="challengeProgressText"></small>
+  <h3>Progress Challenge</h3>
+
+  <div class="progress-container">
+    <div class="progress-bar">
+      <div id="challengeProgress" class="progress-fill"></div>
+    </div>
+  </div>
+
+  <small id="challengeProgressText"></small>
+
+  <div id="challengeBadge" style="
+    text-align:center;
+    margin-top:6px;
+    font-size:13px;
+    color:#ffcc66;
+    font-weight:bold;
+  "></div>
+
 </div>
 
 </div>
@@ -692,10 +705,24 @@ menunda-nunda bisa jadi tanda hati yang mulai lalai.
 
 <!-- TAB 3: QURAN -->
 <div id="tab3" class="tab">
+
+<div class="card">
+
+<p class="motivasi-sholat">
+“Ya Allah… dia membacaku. Dia menjaga ayat-ayat-Mu... Jaga Dia Ya Allah...”
+</p>
+<div id="sholatList"></div>
+</div>
+
   <div class="card">
     <h3>📖 Jurnal Qur’an</h3>
     <small id="quranDate"></small>
   </div>
+
+<div class="card">
+<h3>🧠 Motivasi Qur’an</h3>
+<div id="ayatMotivasi" style="margin-top:8px;font-size:14px;line-height:1.5"></div>
+</div>
 
   <div class="card">
     <h3>Target Harian (Halaman)</h3>
@@ -715,12 +742,22 @@ menunda-nunda bisa jadi tanda hati yang mulai lalai.
   </div>
 
   <div class="card">
-    <h3>Target Khatam Qur’an</h3>
-    <div class="progress-container">
-      <div id="khatamBar" class="progress-bar"></div>
+  <h3>Target Khatam Qur’an</h3>
+
+  <div class="progress-container">
+    <div class="progress-bar">
+      <div id="khatamBar" class="progress-fill"></div>
     </div>
-    <small id="khatamText"></small>
   </div>
+
+  <small id="khatamText"></small>
+
+  <div id="khatamTrophy" style="
+  text-align:center;
+  font-size:22px;
+  margin-top:6px;
+  "></div>
+</div>
 </div>
 
 <div class="card">
@@ -1087,18 +1124,26 @@ function completeChallenge(){
   challengeBtn.disabled = true;
   challengeStatus.textContent = "✔ Selesai";
 
-document.getElementById("challengeBtn").style.background = "#00c853";
-document.getElementById("challengeBtn").innerText = "✔ Selesai Hari Ini";
-document.querySelector(".challenge-premium")
-  .classList.add("completed-glow");
+  document.getElementById("challengeBtn").style.background = "#00c853";
+  document.getElementById("challengeBtn").innerText = "✔ Selesai Hari Ini";
 
-setTimeout(()=>{
   document.querySelector(".challenge-premium")
-    .classList.remove("completed-glow");
-},800);
+    .classList.add("completed-glow");
 
+  setTimeout(()=>{
+    document.querySelector(".challenge-premium")
+      .classList.remove("completed-glow");
+  },800);
 
   updateChallengeProgress();
+
+  /* animasi progress bar */
+  challengeProgress.classList.add("animate");
+
+  setTimeout(()=>{
+    challengeProgress.classList.remove("animate");
+  },400);
+
   updateStreak();
 }
 
@@ -1215,9 +1260,30 @@ function updateChallengeProgress(){
 
   challengeProgress.style.width =
     (done/duration*100)+"%";
+	
+	if(programMode === "ramadhan" && done >= (duration-10)){
+  challengeProgress.classList.add("gold");
+}else{
+  challengeProgress.classList.remove("gold");
+}
 
   challengeProgressText.textContent =
     done+" / " + duration + " hari";
+	const badge =
+document.getElementById("challengeBadge");
+
+if(done >= 30){
+  badge.textContent = "🏆 Challenge Selesai 30 Hari!";
+}
+else if(done >= 15){
+  badge.textContent = "🔥 15 Hari Konsisten!";
+}
+else if(done >= 7){
+  badge.textContent = "✨ 7 Hari Berturut!";
+}
+else{
+  badge.textContent = "";
+}
 }
 /* =========================
    IBADAH SYSTEM
@@ -1419,12 +1485,32 @@ function updateChart(){
 }
 
 /* =========================
-   QURAN SYSTEM
-========================= */
-
-/* =========================
    QURAN SYSTEM (SAFE VERSION)
 ========================= */
+
+const quranMotivation = [
+
+{
+text:"Dan sungguh Kami telah mudahkan Al-Qur'an untuk pelajaran, maka adakah yang mau mengambil pelajaran?",
+ref:"QS Al-Qamar 17"
+},
+
+{
+text:"Dan bacalah Al-Qur'an itu dengan tartil.",
+ref:"QS Al-Muzzammil 4"
+},
+
+{
+text:"Sesungguhnya orang yang selalu membaca Kitab Allah dan mendirikan shalat...",
+ref:"QS Fatir 29"
+},
+
+{
+text:"Sebaik-baik kalian adalah yang mempelajari Al-Qur’an dan mengajarkannya.",
+ref:"HR Bukhari"
+}
+
+];
 
 function saveRead(){
 
@@ -1452,6 +1538,8 @@ function saveRead(){
 
   updateQuran();
   updateQuranChart();
+  showMotivation();
+  
 }
 
 function updateQuran(){
@@ -1539,26 +1627,78 @@ function updateQuranChart(){
   });
 }
 
+function showMotivation(){
+
+const random =
+Math.floor(Math.random()*quranMotivation.length);
+
+const ayat = quranMotivation[random];
+
+document.getElementById("ayatMotivasi").innerHTML =
+"\"" + ayat.text + "\"" +
+"<br><small>" + ayat.ref + "</small>";
+
+}
+
+
+
 function updateKhatam(){
 
   const total =
     +localStorage["quran_total"] || 0;
 
-  const khatamCount =
-    Math.floor(total / 600);
+const TOTAL_QURAN = 604;
 
-  const sisa =
-    total % 600;
+const khatamCount =
+  Math.floor(total / TOTAL_QURAN);
 
-  const percent =
-    Math.round((sisa / 600) * 100);
+const sisa =
+  total % TOTAL_QURAN;
+
+const percent =
+  Math.round((sisa / TOTAL_QURAN) * 100);
 
   khatamBar.style.width =
     percent + "%";
+	let trophy = "";
 
-  khatamText.textContent =
-    sisa + " halaman • " +
-    khatamCount + "x Khatam";
+if(khatamCount > 0){
+
+  for(let i=0;i<khatamCount;i++){
+    trophy += "🏆";
+  }
+
+  trophy +=
+  "<br>MasyaAllah " +
+  khatamCount +
+  "x Khatam";
+}
+
+document.getElementById("khatamTrophy")
+.innerHTML = trophy;
+
+  let estimasiText = "";
+
+const target =
+  +localStorage["quran_target"] || 0;
+
+if(target > 0){
+
+  const sisaHalaman =
+    TOTAL_QURAN - sisa;
+
+  const estimasiHari =
+    Math.ceil(sisaHalaman / target);
+
+  estimasiText =
+    " • 🔥 Estimasi khatam " +
+    estimasiHari + " hari";
+}
+
+khatamText.textContent =
+  sisa + " halaman • " +
+  khatamCount + "x Khatam" +
+  estimasiText;
 }
 
 /* =========================
@@ -1790,6 +1930,18 @@ setInterval(updateCountdown, 1000);
 
 document.addEventListener("DOMContentLoaded", function(){
 
+  /* tampilkan versi aplikasi */
+  const footer = document.getElementById("appFooter");
+  if(footer){
+    footer.innerHTML += "<br><small>Versi " + APP_VERSION + "</small>";
+  }
+
+  /* update progress challenge saat halaman dibuka */
+  if(typeof updateChallengeProgress === "function"){
+    updateChallengeProgress();
+  }
+
+  /* popup install hanya muncul sekali */
   if(!localStorage.getItem("installPopupShown")){
 
     setTimeout(function(){
@@ -1802,11 +1954,12 @@ document.addEventListener("DOMContentLoaded", function(){
 
       localStorage.setItem("installPopupShown","yes");
 
-    }, 2000);
+    },2000);
 
   }
 
 });
+
 
 // === ISI DROPDOWN KOTA ===
 const citySelect = document.getElementById("citySelect");
@@ -1837,6 +1990,7 @@ loadPrayerTimes();
 checkDonasiPeriod();
 checkLastTenDays();
 updateCurrentPrayer();
+showMotivation();
 
 </script>
 
