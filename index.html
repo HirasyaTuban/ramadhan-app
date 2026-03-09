@@ -53,6 +53,27 @@ canvas{
   max-height:75px;
 }
 
+.ibadah-anim{
+  animation: ibadahBounce 0.4s ease;
+}
+
+@keyframes ibadahBounce{
+
+  0%{
+    transform:scale(1);
+  }
+
+  50%{
+    transform:scale(1.05);
+    box-shadow:0 0 10px rgba(255,179,0,0.7);
+  }
+
+  100%{
+    transform:scale(1);
+  }
+
+}
+
 .app{
 min-height:100vh;
 padding-bottom:80px;
@@ -146,6 +167,27 @@ border:none;
 padding:10px;
 background:#111;
 color:#fff;
+}
+
+.ibadah-item.checked{
+  animation: ibadahGlow 0.6s ease;
+}
+
+@keyframes ibadahGlow{
+  0%{
+    transform:scale(1);
+    box-shadow:0 0 0px rgba(0,200,83,0);
+  }
+
+  50%{
+    transform:scale(1.05);
+    box-shadow:0 0 15px rgba(0,200,83,0.6);
+  }
+
+  100%{
+    transform:scale(1);
+    box-shadow:0 0 0px rgba(0,200,83,0);
+  }
 }
 
 .checklist-title{
@@ -531,12 +573,15 @@ color:#aaa;
 
 
 </style>
+
 </head>
 
 <body>
 <div class="app">
-
-<!-- TAB 1 -->
+<button id="installBtn" onclick="installApp()" style="display:none">
+📲 Install App
+</button>
+  <!-- TAB 1 -->
 <div id="tab1" class="tab active">
 
 <div class="motivasi-quote">
@@ -669,7 +714,6 @@ color:#aaa;
   letter-spacing:1px;">
   🌙 10 Hari Terakhir Ramadhan
 </div>
-
 
 <!-- TAB 2 -->
 <div id="tab2" class="tab">
@@ -876,6 +920,41 @@ const khatamText = document.getElementById("khatamText");
 const rekapChallenge = document.getElementById("rekapChallenge");
 const rekapIbadah = document.getElementById("rekapIbadah");
 const rekapQuran = document.getElementById("rekapQuran");
+
+/* =========================
+   INSTALL APLIKASI
+========================= */
+
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt",(e)=>{
+
+  e.preventDefault();
+
+  deferredPrompt = e;
+
+  const btn = document.getElementById("installBtn");
+
+  if(btn){
+    btn.style.display = "block";
+  }
+
+});
+
+function installApp(){
+
+  if(!deferredPrompt) return;
+
+  deferredPrompt.prompt();
+
+  deferredPrompt.userChoice.then(()=>{
+
+    deferredPrompt = null;
+
+  });
+
+}
+
 
 /* =========================
    SYSTEM DATE & RAMADHAN
@@ -1340,23 +1419,45 @@ const sholatData=[
 ];
 
 function renderSholat(){
+  const sholatList = document.getElementById("sholatList");
+  sholatList.innerHTML = "";
 
-  sholatList.innerHTML="";
+  // mapping icon per item
+  const icons = {
+    "Qobliyah Subuh":"🌅",
+    "Subuh":"🌅",
+    "Qobliyah Zuhur":"☀️",
+    "Zuhur":"☀️",
+    "Ba'diyah Zuhur":"☀️",
+    "Ashar":"🌤",
+    "Maghrib":"🌇",
+    "Ba'diyah Maghrib":"🌇",
+    "Isya":"🌙",
+    "Ba'diyah Isya":"🌙",
+    "Tarawih":"📖",
+    "Witir":"📖",
+    "Dhuha":"📖",
+    "Tahajud":"📖",
+    "Al Ma’surat Pagi":"📖",
+    "Al Ma’surat Petang":"📖"
+  };
 
-  sholatData.forEach(group=>{
+  sholatData.forEach(group => {
 
-    sholatList.innerHTML+=
-    `<div class="checklist-title">${group.title}</div>`;
+    sholatList.innerHTML += `<div class="checklist-title">${group.title}</div>`;
 
-    group.items.forEach(item=>{
+    group.items.forEach(item => {
 
-      const key="ibadah_"+todayKey+"_"+item[0];
-      const checked=localStorage[key]=="1";
+      const key = "ibadah_" + todayKey + "_" + item[0];
+      const checked = localStorage[key] == "1";
 
-      sholatList.innerHTML+=`
+      // ambil icon jika ada
+      const icon = icons[item[0]] ? `<span style="margin-right:6px">${icons[item[0]]}</span>` : "";
+
+      sholatList.innerHTML += `
       <div class="checklist-row">
         <div class="check-text">
-          <div>${item[0]}</div>
+          <div>${icon}${item[0]}</div>
           <div class="rakaat">${item[1]}</div>
         </div>
         <input type="checkbox"
@@ -1364,6 +1465,7 @@ function renderSholat(){
           onchange="localStorage['${key}']=this.checked?'1':'0';updateIbadah()">
       </div>`;
     });
+
   });
 
   updateIbadah();
@@ -1373,6 +1475,23 @@ function updateIbadah(){
 
   const all =
   document.querySelectorAll("#sholatList input");
+
+  // animasi glow ketika checklist berubah
+  all.forEach(cb=>{
+    cb.addEventListener("change",()=>{
+
+      const item = cb.closest("label");
+
+      if(item){
+        item.classList.add("ibadah-anim");
+
+        setTimeout(()=>{
+          item.classList.remove("ibadah-anim");
+        },500);
+      }
+
+    });
+  });
 
   const checked =
   [...all].filter(x=>x.checked).length;
@@ -1499,9 +1618,13 @@ function updateChart(){
       }]
     },
     options:{
-      plugins:{legend:{display:false}},
-      scales:{y:{min:0,max:100}}
-    }
+  plugins:{legend:{display:false}},
+  scales:{y:{min:0,max:100}},
+  animation:{
+    duration:900,
+    easing:"easeOutQuart"
+  }
+}
   });
 }
 
