@@ -1,7 +1,7 @@
-const CACHE_NAME = "ramadhan-app-v4d";
+const CACHE_NAME = "ramadhan-app-v4e";
 const urlsToCache = [
   "/",
-  "/app.html",
+  "/index.html",
   "/manifest.json",
   "/icon-192.png",
   "/icon-512.png"

@@ -882,7 +882,16 @@ const rekapQuran = document.getElementById("rekapQuran");
 ========================= */
 
 const today = new Date();
-const todayKey = today.toISOString().split("T")[0];
+
+function getTodayKey(){
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth()+1).padStart(2,'0');
+  const day = String(now.getDate()).padStart(2,'0');
+  return year + "-" + month + "-" + day;
+}
+
+const todayKey = getTodayKey();
 
 const ramadhanDay = getRamadhanDay();
 
@@ -1156,21 +1165,33 @@ function updateStreak(){
     const d = new Date();
     d.setDate(d.getDate()-i);
 
+    // format tanggal lokal (hindari bug timezone)
+    const year = d.getFullYear();
+    const month = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+
+    const dateKey = year + "-" + month + "-" + day;
+
     const key =
       programMode +
       "_challenge_" +
-      d.toISOString().split("T")[0];
+      dateKey;
 
-    if(localStorage[key]){
+    if(localStorage.getItem(key)){
       streak++;
-    } else {
+    }else{
       break;
     }
+
   }
 
-  document.getElementById("streakText")
-    .textContent =
-    "🔥 Streak: " + streak + " hari";
+  const streakEl = document.getElementById("streakText");
+
+  if(streakEl){
+    streakEl.textContent =
+      "🔥 Streak: " + streak + " hari";
+  }
+
 }
 
 let notifiedToday = {};
@@ -1824,20 +1845,43 @@ if ("Notification" in window) {
 
 
 /* =========================
-   AUTO RELOAD JIKA TANGGAL BERUBAH
+   AUTO DAY CHANGE (PREMIUM)
 ========================= */
 
+let lastDate = getTodayKey();
 
-let lastDate = todayKey;
+setInterval(()=>{
 
-setInterval(function(){
-  const now = new Date();
-  const current = now.toISOString().split("T")[0];
+  const current = getTodayKey();
 
   if(current !== lastDate){
-    location.reload();
+
+    lastDate = current;
+
+    console.log("🌙 Hari baru Ramadhan dimulai");
+
+    // update tanggal
+    ibadahDate.textContent =
+      new Date().toLocaleDateString("id-ID",{
+        weekday:"long",
+        day:"numeric",
+        month:"long",
+        year:"numeric"
+      });
+
+    quranDate.textContent = ibadahDate.textContent;
+
+    // refresh sistem
+    renderSholat();
+    updateIbadah();
+    updateQuran();
+    updateQuranChart();
+    loadChallenge();
+    updateRekap();
+
   }
-}, 60000);
+
+},60000);
 
 
 const prayerCities = {
@@ -1980,6 +2024,8 @@ if(savedCity){
 
 // jalankan init
 loadSyukur();
+ibadahDate.textContent = formattedDate;
+quranDate.textContent = formattedDate;
 renderSholat();
 updateQuran();
 updateQuranChart();
